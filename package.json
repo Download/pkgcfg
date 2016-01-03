@@ -1,0 +1,37 @@
+{
+  "name": "pkgcfg",
+  "version": "0.1.0",
+  "description": "Move those pesky configuration files to your package.json with pkgcfg",
+  "main": "pkgcfg.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/download/pkgcfg.git"
+  },
+  "scripts": {
+    "test": "mocha pkgcfg.spec.js",
+    "test-watch": "mocha --watch pkgcfg.spec.js"
+  },
+  "keywords": [
+    "package.json",
+    "configuration",
+    "pkgcfg",
+    "pkgvar",
+    "pkgpaths",
+    "pkgtransform",
+    "pkgmerge"
+  ],
+  "author": "Stijn de Witt",
+  "license": "CC-BY-4.0",
+  "bugs": {
+    "url": "https://github.com/download/pkgcfg/issues"
+  },
+  "homepage": "https://github.com/download/pkgcfg",
+  "devDependencies": {
+    "chai": "^3.4.1",
+    "mocha": "^2.3.4"
+  },
+  "dependencies": {
+    "object-path": "^0.9.2",
+    "path": "^0.12.7"
+  }
+}
