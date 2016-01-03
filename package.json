@@ -16,7 +16,7 @@
     "configuration",
     "pkgcfg",
     "pkgvar",
-    "pkgpaths",
+    "pkgpath",
     "pkgtransform",
     "pkgmerge"
   ],
