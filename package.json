@@ -1,6 +1,6 @@
 {
   "name": "pkgcfg",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Move those pesky configuration files to your package.json with pkgcfg",
   "main": "pkgcfg.js",
   "repository": {
@@ -18,9 +18,10 @@
         "with",
         "pkgcfg"
       ],
-      "with-dash": "common",
-      "with:colon": "common",
-      "with.dot": "rare"
+      "with-dash": "ok",
+      "with:colon": "ok",
+      "with.dot": "ok",
+      "with'quote": "ok"
     },
     "primitive": "{pkg name}",
     "nested-primitive": "{pkg repository.type}",
@@ -28,12 +29,14 @@
     "nested-object": "{pkg test.data}",
     "array": "{pkg keywords}",
     "nested-array": "{pkg test.data.array}",
-    "array-length": "@pkg.test.data.array.length",
-    "nth-item": "@pkg.test.data.array.1",
-    "with-dash": "@pkg.test.data.with-dash",
-    "with-colon": "@pkg.test.data.with:colon",
-    "with-dot": "@pkg['test','data','with.dot']",
-    "indirect": "@pkg.test.primitive",
+    "unresolved": "{pkg unresolved.transforms.return.unmodified.text}",
+    "array-length": "{pkg test.data.array.length}",
+    "nth-item": "{pkg test.data.array.2}",
+    "with-dash": "{pkg test.data.with-dash}",
+    "with-colon": "{pkg test.data.with:colon}",
+    "with-dot": "{pkg ['test','data','with.dot']}",
+    "with-quote": "{pkg ['test','data','with''quote']}",
+    "indirect": "{pkg test.primitive}",
     "direct-cyclic": "@pkg.test.direct-cyclic",
     "indirect-loop": "@pkg.test.indirect-cyclic",
     "indirect-cyclic": "@pkg.test.indirect-loop",
@@ -74,12 +77,13 @@
   "homepage": "https://github.com/download/pkgcfg",
   "devDependencies": {
     "chai": "^3.4.1",
-    "mocha": "^2.3.4"
+    "chalk": "^1.1.1",
+    "mocha": "^2.3.4",
+    "picolog": "^1.0.0"
   },
   "dependencies": {
     "object-path": "^0.9.2",
     "path": "^0.12.7",
-    "picolog": "^1.0.0",
     "pkgpath": "^0.1.1",
     "pkgvar": "^0.1.1"
   }

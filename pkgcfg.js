@@ -1,6 +1,6 @@
 ﻿var fs = require('fs');
-var log = require('picolog');
 var objectPath = require("object-path");
+var log; try {require.resolve('picolog'); log=require('picolog');} catch(e){}
 
 var global = typeof window == 'object' ? window : (typeof global == 'object' ? global : this);
 
@@ -20,46 +20,28 @@ pkgcfg.registry = {
 	getTransformTags: getTransformTags
 };
 
-pkgcfg.registry.register('pkg', function(pkg, node, arg) {
-	var result;
-	if (arg) {
-		result = objectPath.get(pkg, arg);
-	}
-	if (result === undefined) {return '{pkg' + arg + '}';}
+
+function pkg(pkg, node, path) {
+	var result = objectPath.get(pkg, path);
+	if (result === undefined) {throw new pkgcfg.QuietError('{pkg ' + path + '} cannot be resolved.');}
 	return result;
-});
+}
+
+pkgcfg.registry.register('pkg', pkg);
+
+pkgcfg.QuietError = function(msg) {
+	this.constructor.call(this, msg);
+}
+pkgcfg.QuietError.prototype.constructor = Error;
+
+pkgcfg.utils = {
+	convertQuotes: convertQuotes,
+};
 
 module.exports = pkgcfg;
 
-function register(tag, func) {
-	log.assert(tag, 'Parameter `tag` is required when registering a package transform: ', tag);
-	log.assert(typeof tag == 'string', 'Parameter `tag` must be a string: ', tag);
-	log.assert(!registeredTransforms[tag], 'A package transform with that tag is already registered: ', registeredTransforms[tag]);
-	log.assert(['toString', 'valueOf', 'toJSON'].indexOf(tag) === -1, '`%s` is a reserved word and may not be used as a tag for a package transform.', tag);
-	var usedReservedChars = ['{','}','[',']','(',')'].filter(
-		function(x){
-			return tag.indexOf(x) !== -1;
-		}
-	);
-	log.assert(usedReservedChars.length === 0, 'Parameter `tag` contains reserved character(s): ', usedReservedChars);
-	log.assert(func, 'Parameter `func` is required when registering a package transform: ', func);
-	log.assert(typeof func == 'function', 'Parameter `func` must be a function when registering a package transform: ', func);
-	registeredTransforms[tag] = func;
-}
 
-function unregister(tag, func) {
-	log.assert(registeredTransforms[tag] && registeredTransforms[tag] === func, 'Unable to unregister the package transform. The supplied function is not currently registered with the supplied tag %s.', tag);
-	log.assert(['toString', 'valueOf', 'toJSON'].indexOf(tag) === -1, '`%s` is a reserved word and may not be used as a tag for a package transform.', tag);
-	delete registeredTransforms[tag];
-}
-
-function getTransform(tag) {
-	return registeredTransforms[tag];
-}
-
-function getTransformTags() {
-	return Object.keys(registeredTransforms);
-}
+// IMPLEMENTATION //
 
 function process(pkg, node) {
 	// array
@@ -149,27 +131,113 @@ function tagBody(tokenstream) {
 		}
 		if (inString) {
 			if (token === '\'') {
-				inString = !inString;
+				inString = false;
 				esc = true;
 				continue;
 			}
 		}
 		if (token === '}') {result.end = i; return result;} // 1 or 2
 		result.arg += token;
-		if (esc && (token === '\'')) {inString = true; continue;}
+		if (esc && (token === '\'')) {inString = true;}
+		esc = false;
 	}
 	return null;
 }
 
 function transform(pkg, node, tag, arg) {
 	try {
+		if (typeof arg == 'string') {
+			var a = arg.replace(/\s/g, '');
+			if (((a[0] === '[') && a[a.length -1] === ']') ||
+				((a[0] === '{') && a[a.length -1] === '}')) {
+				try {arg = JSON.parse(pkgcfg.utils.convertQuotes(a));} catch(e){}
+			}
+		}
 		var result = registeredTransforms[tag](pkg, node, arg);
-		log.log('Package transform: %s(%s) => ', tag, arg, result);
+		log && log.log('Package transform: %s(%s) => ', tag, arg, result);
 		return registeredTransforms[tag](pkg, node, arg);
 	}
 	catch(error) {
-		log.error('Error applying package transform `%s`: ', tag, error);
+		var err = error instanceof pkgcfg.QuietError
+			? log && log.debug || function(){}
+			: log && log.error || (typeof console == 'object') && console.error || function(){};
+		err('Error applying package transform `%s`: ', tag, error);
 		return node;
 	}
 }
 
+function register(tag, func) {
+	log && log.assert(tag, 'Parameter `tag` is required when registering a package transform: ', tag);
+	log && log.assert(typeof tag == 'string', 'Parameter `tag` must be a string: ', tag);
+	log && log.assert(!registeredTransforms[tag], 'A package transform with that tag is already registered: ', registeredTransforms[tag]);
+	log && log.assert(['toString', 'valueOf', 'toJSON'].indexOf(tag) === -1, '`%s` is a reserved word and may not be used as a tag for a package transform.', tag);
+	var usedReservedChars = ['{','}','[',']','(',')'].filter(
+		function(x){
+			return tag.indexOf(x) !== -1;
+		}
+	);
+	log && log.assert(usedReservedChars.length === 0, 'Parameter `tag` contains reserved character(s): ', usedReservedChars);
+	log && log.assert(func, 'Parameter `func` is required when registering a package transform: ', func);
+	log && log.assert(typeof func == 'function', 'Parameter `func` must be a function when registering a package transform: ', func);
+	registeredTransforms[tag] = func;
+}
+
+function unregister(tag, func) {
+	log && log.assert(registeredTransforms[tag] && registeredTransforms[tag] === func, 'Unable to unregister the package transform. The supplied function is not currently registered with the supplied tag %s.', tag);
+	log && log.assert(['toString', 'valueOf', 'toJSON'].indexOf(tag) === -1, '`%s` is a reserved word and may not be used as a tag for a package transform.', tag);
+	delete registeredTransforms[tag];
+}
+
+function getTransform(tag) {
+	return registeredTransforms[tag];
+}
+
+function getTransformTags() {
+	return Object.keys(registeredTransforms);
+}
+
+function convertQuotes(payload) {
+	if (!payload || typeof payload != 'string') {return payload};
+	var result = '';
+	var inString = false;
+	var esc = false;
+	for (var i=0; i<payload.length; i++) {
+		var token = payload[i];
+		if (inString) {
+			if (token === '\'') {
+				if (esc) {
+					// 2 consecutive quotes inside a string are escaped to a single quote
+					result += '\'';
+					esc = false;
+				}
+				else {
+					// encountered a quote... might be first of multiple, flag but do nothing yet
+					esc = true;
+				}
+			}
+			else {
+				if (esc) {
+					// the previous quote stands on it's own, so it's a string terminator
+					result += '"';
+					inString = false;
+				}
+				esc = false;
+				result += token;
+			}
+		}
+		else {
+			if (token === '\'') {
+				result += '"';
+				inString = true;
+			}
+			else {
+				result += token;
+			}
+		}
+	}
+	if (esc) {
+		result += '"';
+	}
+	log && log.debug('convertQuotes(' + payload + ') ==> ', result);
+	return result;
+}
