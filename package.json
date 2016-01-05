@@ -1,6 +1,6 @@
 {
   "name": "pkgcfg",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Move those pesky configuration files to your package.json with pkgcfg",
   "main": "pkgcfg.js",
   "repository": {
@@ -11,14 +11,60 @@
     "test": "mocha pkgcfg.spec.js",
     "test-watch": "mocha --watch pkgcfg.spec.js"
   },
+  "test": {
+    "data": {
+      "array": [
+        "one config to rule them all",
+        "with",
+        "pkgcfg"
+      ],
+      "with-dash": "common",
+      "with:colon": "common",
+      "with.dot": "rare"
+    },
+    "primitive": "{pkg name}",
+    "nested-primitive": "{pkg repository.type}",
+    "object": "{pkg repository}",
+    "nested-object": "{pkg test.data}",
+    "array": "{pkg keywords}",
+    "nested-array": "{pkg test.data.array}",
+    "array-length": "@pkg.test.data.array.length",
+    "nth-item": "@pkg.test.data.array.1",
+    "with-dash": "@pkg.test.data.with-dash",
+    "with-colon": "@pkg.test.data.with:colon",
+    "with-dot": "@pkg['test','data','with.dot']",
+    "indirect": "@pkg.test.primitive",
+    "direct-cyclic": "@pkg.test.direct-cyclic",
+    "indirect-loop": "@pkg.test.indirect-cyclic",
+    "indirect-cyclic": "@pkg.test.indirect-loop",
+    "register": "{hello}"
+  },
   "keywords": [
     "package.json",
     "configuration",
+    "pkgand",
+    "pkgarg",
     "pkgcfg",
-    "pkgvar",
+    "pkgempty",
+    "pkgenv",
+    "pkgeq",
+    "pkgexp",
+    "pkgfor",
+    "pkggen",
+    "pkggt",
+    "pkggte",
+    "pkgif",
+    "pkglt",
+    "pkglte",
+    "pkgmerge",
+    "pkgneq",
+    "pkgneq",
+    "pkgnot",
+    "pkgop",
+    "pkgor",
     "pkgpath",
     "pkgtransform",
-    "pkgmerge"
+    "pkgvar"
   ],
   "author": "Stijn de Witt",
   "license": "CC-BY-4.0",
@@ -32,6 +78,9 @@
   },
   "dependencies": {
     "object-path": "^0.9.2",
-    "path": "^0.12.7"
+    "path": "^0.12.7",
+    "picolog": "^1.0.0",
+    "pkgpath": "^0.1.1",
+    "pkgvar": "^0.1.1"
   }
 }
