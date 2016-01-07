@@ -11,7 +11,7 @@ describe('pkgcfg', function(){
 	});
 
 	it('returns an object representation of package.json when given a valid path', function(){
-		var pkg = pkgcfg('package.json');
+		var pkg = pkgcfg();
 		expect(pkg).to.have.a.property('name');
 		expect(pkg.name).to.equal('pkgcfg');
 		expect(pkg).to.have.a.property('version');
@@ -89,7 +89,7 @@ describe('pkgcfg', function(){
 
 describe('built-in transforms', function(){
 	describe('pkg', function(){
-		var pkg = pkgcfg('package.json');
+		var pkg = pkgcfg();
 
 		// "primitive": "{pkg name}",
 		it('returns the referenced primitive value', function(){

@@ -1,4 +1,4 @@
-# pkgcfg <sup><sub>0.3.0</sub></sup>
+# pkgcfg <sup><sub>0.3.1</sub></sup>
 **One configuration to rule them all**
 
 ## install

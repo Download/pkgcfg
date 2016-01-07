@@ -1,11 +1,12 @@
 ﻿var fs = require('fs');
-var objectPath = require("object-path");
+var objectPath = require('object-path');
+var appRoot = require('app-root-path');
 var log; try {require.resolve('picolog'); log=require('picolog');} catch(e){}
 
 var global = typeof window == 'object' ? window : (typeof global == 'object' ? global : this);
 
 function pkgcfg(pkg) {
-	if (! pkg) {pkg = '../../package.json';}
+	if (! pkg) {pkg = appRoot + '/package.json';}
 	if (typeof pkg == 'string') {pkg = JSON.parse(fs.readFileSync(pkg));}
 	var root = pkg;
 	processed = process(pkg, root);
@@ -33,10 +34,6 @@ pkgcfg.QuietError = function(msg) {
 	this.constructor.call(this, msg);
 }
 pkgcfg.QuietError.prototype.constructor = Error;
-
-pkgcfg.utils = {
-	convertQuotes: convertQuotes,
-};
 
 module.exports = pkgcfg;
 
@@ -147,10 +144,10 @@ function tagBody(tokenstream) {
 function transform(pkg, node, tag, arg) {
 	try {
 		if (typeof arg == 'string') {
-			var a = arg.replace(/\s/g, '');
+			var a = arg.trim();
 			if (((a[0] === '[') && a[a.length -1] === ']') ||
 				((a[0] === '{') && a[a.length -1] === '}')) {
-				try {arg = JSON.parse(pkgcfg.utils.convertQuotes(a));} catch(e){}
+				try {arg = JSON.parse(convertQuotes(a));} catch(e){}
 			}
 		}
 		var result = registeredTransforms[tag](pkg, node, arg);
