@@ -1,6 +1,6 @@
 {
   "name": "pkgcfg",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Move those pesky configuration files to your package.json with pkgcfg",
   "main": "pkgcfg.js",
   "repository": {
@@ -23,6 +23,12 @@
       "with.dot": "ok",
       "with'quote": "ok"
     },
+    "calls-transform": "{test}",
+    "calls-transform-with-arg": "{test-with-arg some arg}",
+    "calls-transform-with-arg-object": "{test-with-arg-object {'some':'object'}}",
+    "calls-transform-with-arg-array": "{test-with-arg-array ['some','array']}",
+    "calls-transform-with-arg-list": "{test-with-arg-list ('some','list')}",
+    "calls-transform-with-unbalanced-close": "{test-with-unbalanced-close 'unbalanced } close'}",
     "primitive": "{pkg name}",
     "nested-primitive": "{pkg repository.type}",
     "object": "{pkg repository}",
@@ -37,7 +43,6 @@
     "with-dot": "{pkg ['test','data','with.dot']}",
     "with-quote": "{pkg ['test','data','with''quote']}",
     "indirect": "{pkg test.primitive}",
-    "direct-cyclic": "@pkg.test.direct-cyclic",
     "indirect-loop": "@pkg.test.indirect-cyclic",
     "indirect-cyclic": "@pkg.test.indirect-loop",
     "register": "{hello}"

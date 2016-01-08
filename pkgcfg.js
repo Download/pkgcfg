@@ -1,6 +1,6 @@
-﻿var fs = require('fs');
-var objectPath = require('object-path');
-var appRoot = require('app-root-path');
+﻿var appRoot = require('app-root-path');
+var fs = require('fs');
+var objectPath = require("object-path");
 var log; try {require.resolve('picolog'); log=require('picolog');} catch(e){}
 
 var global = typeof window == 'object' ? window : (typeof global == 'object' ? global : this);
@@ -30,10 +30,18 @@ function pkg(pkg, node, path) {
 
 pkgcfg.registry.register('pkg', pkg);
 
+
 pkgcfg.QuietError = function(msg) {
-	this.constructor.call(this, msg);
+  var obj = {};
+  this.message = msg;
+  this.name = 'QuietError';
+  Error.captureStackTrace(obj, pkgcfg.QuietError);
+  Object.defineProperty(this, 'stack', {get: function(){return obj.stack;}});
 }
-pkgcfg.QuietError.prototype.constructor = Error;
+pkgcfg.QuietError.prototype = Object.create(Error.prototype);
+pkgcfg.QuietError.prototype;
+pkgcfg.QuietError.prototype.constructor = pkgcfg.QuietError;
+
 
 module.exports = pkgcfg;
 
@@ -80,8 +88,7 @@ function processString(pkg, node) {
 			var transformed = transform(pkg, node, next.tag, payload);
 			var isStr = typeof transformed == 'string';
 			if (!isStr) {complex = true;}
-			if (!isStr || transformed.indexOf('{' + next.tag) !== 0) { // prevent recursion
-				// 2nd pass
+			if (!isStr || transformed !== node) {
 				transformed = process(pkg, transformed);
 			}
 			result.push(transformed);
@@ -100,8 +107,9 @@ function nextTag(tokenstream) {
 	var NOTFOUND = 999999999;
 	var next = {tag:null, idx:NOTFOUND};
 	for (var i=0; i<tags.length; i++) {
-		var idx = tokenstream.indexOf('{' + tags[i]);
-		if ((idx !== -1) && (idx < next.idx)) {
+		var exp = new RegExp('{' + tags[i] + '[\\s\\.\\}\\[\\{\\(]');
+		var idx = tokenstream.search(exp);
+		if ((idx !== -1) && (idx < next.idx) && (tokenstream[idx+tags[i].length+1] )) {
 			next.idx = idx;
 			next.tag = tags[i];
 		}
@@ -119,23 +127,36 @@ function tagBody(tokenstream) {
 	var whitespace = /\s/;
 	for (var i=0; i<tokenstream.length; i++) {
 		var token = tokenstream[i];
-		if (result.process === null) {
-			if (token.match(whitespace)) {continue;}
-			if (token === '}') {result.end = i; return result;} // 0
-			result.process = inString = token === '\'';
-			result.arg = inString ? '' : token;
-			continue;
+		if (!inString) {
+			if (token === '{') {
+				open++;
+			}
+			if (token === '}') {
+				if (!open) {
+					result.end = i;
+					if (result.arg && result.arg[0] === '\'' && result.arg[result.arg.length-1] === '\'') {
+						result.arg = result.arg.substring(1, result.arg.length-1);
+					}
+					return result;
+				} 
+				open--;
+			}
+			if (token === '\'') {
+				inString = true;
+				if (esc) {continue;}
+			}
+			if (result.arg===null && token.search(whitespace)===0) {continue;}
 		}
-		if (inString) {
+		else { // inString
 			if (token === '\'') {
 				inString = false;
 				esc = true;
-				continue;
 			}
 		}
-		if (token === '}') {result.end = i; return result;} // 1 or 2
+		if (result.arg === null) {
+			result.arg = '';
+		}
 		result.arg += token;
-		if (esc && (token === '\'')) {inString = true;}
 		esc = false;
 	}
 	return null;
@@ -143,22 +164,35 @@ function tagBody(tokenstream) {
 
 function transform(pkg, node, tag, arg) {
 	try {
+		var args = [pkg, node];
 		if (typeof arg == 'string') {
 			var a = arg.trim();
 			if (((a[0] === '[') && a[a.length -1] === ']') ||
 				((a[0] === '{') && a[a.length -1] === '}')) {
 				try {arg = JSON.parse(convertQuotes(a));} catch(e){}
+				args.push(arg);
+			}
+			else if ((a[0] === '(') && a[a.length -1] === ')') {
+				a = '[' + a.substring(1, a.length -1) + ']';
+				try {arg = JSON.parse(convertQuotes(a));} catch(e){}
+				Array.prototype.push.apply(args, arg);
+			}
+			else {
+				args.push(arg);
 			}
 		}
-		var result = registeredTransforms[tag](pkg, node, arg);
-		log && log.log('Package transform: %s(%s) => ', tag, arg, result);
-		return registeredTransforms[tag](pkg, node, arg);
+		else {
+			args.push(arg);
+		}
+		var result = registeredTransforms[tag].apply(global, args);
+		log && log.log('Package transform: %s(%s) => ', tag, args, result);
+		return result;
 	}
 	catch(error) {
 		var err = error instanceof pkgcfg.QuietError
 			? log && log.debug || function(){}
 			: log && log.error || (typeof console == 'object') && console.error || function(){};
-		err('Error applying package transform `%s`: ', tag, error);
+		err('Error applying package transform %s(%s): ', tag, args, error);
 		return node;
 	}
 }

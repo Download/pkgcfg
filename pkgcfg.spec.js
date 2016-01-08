@@ -5,18 +5,112 @@ var expect = require('chai').expect;
 var pkgcfg = require('./pkgcfg');
 
 describe('pkgcfg', function(){
-
 	it('is a function', function(){
 		expect(pkgcfg).to.be.a('function');
 	});
 
-	it('returns an object representation of package.json when given a valid path', function(){
-		var pkg = pkgcfg();
+	var pkg = pkgcfg();
+	
+	it('returns an object representation of package.json', function(){
 		expect(pkg).to.have.a.property('name');
 		expect(pkg.name).to.equal('pkgcfg');
 		expect(pkg).to.have.a.property('version');
 		expect(pkg).to.have.a.property('description');
 	});
+	
+	// "calls-transform": "{test}",
+	it('calls transform functions associated to tags that it encounters during parsing', function(){
+		log.info('{test} => calls test()');
+		function test(pkg, node) {called = true;}
+		pkgcfg.registry.register('test', test);
+		try {
+			var pkg = pkgcfg();
+			expect(called).to.equal(true);
+		} finally {pkgcfg.registry.unregister('test', test);}
+	});
+
+	// "calls-transform-with-arg": "{test-with-arg some arg}",
+	it('calls transform functions with a string argument', function(){
+		log.info('{test-with-arg some arg} => calls test(\'some arg\')');
+		var called = false;
+		function test(pkg, node, arg) {
+			expect(arg).to.equal('some arg');
+			called = true;
+		}
+		pkgcfg.registry.register('test-with-arg', test);
+		try {
+			var pkg = pkgcfg();
+			expect(called).to.equal(true);
+		} finally {pkgcfg.registry.unregister('test-with-arg', test);}
+	});
+
+	// "calls-transform-with-arg-object": "{test-with-arg-object {'some':'object'}}",
+	it('calls transform functions with an object argument', function(){
+		log.info('{test-with-arg-object {\'some\':\'object\'}} => calls test({some:\'object\'})');
+		var called = false;
+		function test(pkg, node, arg) {
+			expect(arg).to.be.an('object');
+			expect(arg.some).to.equal('object');
+			called = true;
+		}
+		pkgcfg.registry.register('test-with-arg-object', test);
+		try {
+			var pkg = pkgcfg();
+			expect(called).to.equal(true);
+		} finally {pkgcfg.registry.unregister('test-with-arg-object', test);}
+	});
+
+	// "calls-transform-with-arg-array": "{test-with-arg-array ['some','array']}",
+	it('calls transform functions with array arguments', function(){
+		log.info('{test-with-arg-array [\'some\',\'array\']} => calls test([\'some\',\'array\'])');
+		var called = false;
+		function test(pkg, node, arg) {
+			expect(arg).to.be.an('array');
+			expect(arg[0]).to.equal('some');
+			expect(arg[1]).to.equal('array');
+			called = true;
+		}
+		pkgcfg.registry.register('test-with-arg-array', test);
+		try {
+			var pkg = pkgcfg();
+			expect(called).to.equal(true);
+		} finally {pkgcfg.registry.unregister('test-with-arg-array', test);}
+	});
+
+	// "calls-transform-with-arg-list": "{test-with-arg-list ('some','list')}",
+	it('calls transform functions with arguments list', function(){
+		log.info('{test-with-arg-list (\'some\',\'list\')} => calls test(\'some\', \'list\')');
+		var called = false;
+		function test(pkg, node, arg0, arg1) {
+			expect(arg0).to.be.a('string');
+			expect(arg0).to.equal('some');
+			expect(arg1).to.be.a('string');
+			expect(arg1).to.equal('list');
+			called = true;
+		}
+		pkgcfg.registry.register('test-with-arg-list', test);
+		try {
+			var pkg = pkgcfg();
+			expect(called).to.equal(true);
+		} finally {pkgcfg.registry.unregister('test-with-arg-list', test);}
+	});
+
+	// "calls-transform-with-unbalanced-close": "{test-with-unbalanced-close 'unbalanced } close'}",
+	it('calls transform functions with quoted unbalanced close markers', function(){
+		log.info('{test-with-unbalanced-close \'unbalanced } close\'} => calls test(\'some\', \'list\')');
+		var called = false;
+		function test(pkg, node, arg) {
+			expect(arg).to.be.a('string');
+			expect(arg).to.equal('unbalanced } close');
+			called = true;
+		}
+		pkgcfg.registry.register('test-with-unbalanced-close', test);
+		try {
+			var pkg = pkgcfg();
+			expect(called).to.equal(true);
+		} finally {pkgcfg.registry.unregister('test-with-unbalanced-close', test);}
+	});
+
 
 	it('maintains a registry of package transforms', function(){
 		expect(pkgcfg).to.have.a.property('registry');
@@ -24,7 +118,7 @@ describe('pkgcfg', function(){
 
 	describe('registry', function(){
 		function hello(pkg, node, text) {
-			log.log('executing hello transform');
+			log.info('executing hello transform');
 			return 'Hello' + (text ? ', ' + text : '') + '!'
 		}
 
@@ -49,7 +143,7 @@ describe('pkgcfg', function(){
 				pkgcfg.registry.register('hello', hello);
 				expect(pkgcfg.registry.getTransformTags().length).to.equal(2);
 				expect(pkgcfg.registry.getTransformTags().indexOf('hello')).not.to.equal(-1);
-				var pkg = pkgcfg('package.json');
+				var pkg = pkgcfg();
 				expect(pkg.test.register).to.equal('Hello!');
 			});
 		});
@@ -76,19 +170,19 @@ describe('pkgcfg', function(){
 				pkgcfg.registry.unregister('hello', hello);
 				expect(pkgcfg.registry.getTransformTags().length).to.equal(1);
 				expect(pkgcfg.registry.getTransformTags().indexOf('hello')).to.equal(-1);
-				var pkg = pkgcfg('package.json');
+				var pkg = pkgcfg();
 				expect(pkg.test.register).to.equal('{hello}');
 			});
 		});
 
-		it('contains a built-in transform `pkg`', function(){
+		it('contains a built-in transform {pkg}', function(){
 			expect(pkgcfg.registry.getTransformTags().indexOf('pkg')).not.to.equal(-1);
 		});
 	});
 });
 
-describe('built-in transforms', function(){
-	describe('pkg', function(){
+describe('built-in transform', function(){
+	describe('{pkg}', function(){
 		var pkg = pkgcfg();
 
 		// "primitive": "{pkg name}",
@@ -158,34 +252,38 @@ describe('built-in transforms', function(){
 		});
 
 		// "with-dash": "{pkg test.data.with-dash}",
-		it('resolves paths containing a dash', function(){
+		it('resolves references containing a dash', function(){
 			log.info('{pkg test.data.with-dash} => ok');
 			expect(pkg.test['with-dash']).to.be.a('string');
 			expect(pkg.test['with-dash']).to.equal('ok');
 		});
 
 		// "with-colon": "{pkg test.data.with:colon}",
-		it('resolves paths containing a colon', function(){
+		it('resolves references containing a colon', function(){
 			log.info('{pkg test.data.with:colon} => ok');
 			expect(pkg.test['with-colon']).to.be.a('string');
 			expect(pkg.test['with-colon']).to.equal('ok');
 		});
 
 		// "with-dot": "{pkg ['test','data','with.dot']}",
-		it('resolves paths containing a dot', function(){
+		it('resolves references containing a dot', function(){
 			log.info('{pkg [\'test\',\'data\',\'with.dot\']} => ok');
 			expect(pkg.test['with-dot']).to.be.a('string');
 			expect(pkg.test['with-dot']).to.equal('ok');
 		});
 
 		// "with-quote": "{pkg ['test','data','with''quote']}",
-		it('resolves paths containing a quote', function(){
+		it('resolves references containing a quote', function(){
 			log.info('{pkg [\'test\',\'data\',\'with\'\'quote\']} => ok');
-			log.info(chalk.styles.grey.open, pkg, chalk.styles.grey.close);
 			expect(pkg.test["with-quote"]).to.be.a('string');
 			expect(pkg.test['with-quote']).to.equal('ok');
 		});
 
 		// "indirect": "{pkg test.primitive}",
+		it('resolves indirect references', function(){
+			log.info('{pkg test.primitive} => pkgcfg');
+			expect(pkg.test['indirect']).to.be.a('string');
+			expect(pkg.test['indirect']).to.equal('pkgcfg');
+		});
 	});
 });
