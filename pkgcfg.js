@@ -84,7 +84,7 @@ function processString(pkg, node) {
 		var remaining = input.substring(next.idx + next.tag.length + 1);
 		var body = tagBody(remaining);
 		if (body) {
-			var payload = body.process ? processString(pkg, body.arg) : body.arg;
+			var payload = body.arg ? processString(pkg, body.arg) : body.arg;
 			var transformed = transform(pkg, node, next.tag, payload);
 			var isStr = typeof transformed == 'string';
 			if (!isStr) {complex = true;}
@@ -120,7 +120,7 @@ function nextTag(tokenstream) {
 function tagBody(tokenstream) {
 	// loop through the string, parsing it as we go through it
 	// return the fully resolved tagBody, or null if we encounter illegal state
-	var result = {process:null, arg:null, end:-1};
+	var result = {arg:null, end:-1};
 	var inString=false;
 	var esc = false;
 	var open=0;

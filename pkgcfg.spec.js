@@ -285,5 +285,23 @@ describe('built-in transform', function(){
 			expect(pkg.test['indirect']).to.be.a('string');
 			expect(pkg.test['indirect']).to.equal('pkgcfg');
 		});
+
+		// "tag-within-tag": "{echo {pkg name}}"
+		it('resolves references within other tags', function(){
+			log.info('{echo {pkg name}} => pkgcfg');
+			var called = false;
+			function echo(pkg, node, arg) {
+				var expected = 'pkgcfg';
+				expect(arg).to.equal(expected);
+				called = arg === expected;
+				return arg;
+			}
+			pkgcfg.registry.register('echo', echo);
+			try {
+				var pkg = pkgcfg();
+				expect(pkg.test['tag-within-tag']).to.be.a('string');
+				expect(pkg.test['tag-within-tag']).to.equal('pkgcfg');
+			} finally {pkgcfg.registry.unregister('echo', echo);}
+		});
 	});
 });

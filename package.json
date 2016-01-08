@@ -1,6 +1,6 @@
 {
   "name": "pkgcfg",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Move those pesky configuration files to your package.json with pkgcfg",
   "main": "pkgcfg.js",
   "repository": {
@@ -45,7 +45,8 @@
     "indirect": "{pkg test.primitive}",
     "indirect-loop": "@pkg.test.indirect-cyclic",
     "indirect-cyclic": "@pkg.test.indirect-loop",
-    "register": "{hello}"
+    "register": "{hello}",
+	"tag-within-tag": "{echo {pkg name}}"
   },
   "keywords": [
     "package.json",
