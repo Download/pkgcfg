@@ -165,7 +165,7 @@ and I will add it to this list.
 
 ### {env <name> <defaultValue>}
 Reference environment variables.
-* [pkgenv](https://www.npmjs.com/package/pkgenv)
+* `npm install --save-dev` [pkgenv](https://www.npmjs.com/package/pkgenv)
 
 #### name
 Optional String. The name of the environment variable to read.
@@ -194,7 +194,7 @@ empty string is used as default value.
 
 ### {eval <expr>}
 Evaluate Javascript expressions.
-* [pkgeval](https://www.npmjs.com/package/pkgeval)
+* `npm install --save-dev` [pkgeval](https://www.npmjs.com/package/pkgeval)
 
 #### expr
 Required String. The expression to evaluate.
@@ -285,6 +285,7 @@ desirable to call `unregister` to unregister the transform again:
 ```
 pkgcfg.registry.unregister('env', pkgenv);
 ```
+
 ### (Optional) Publish your transform to NPM
 Place your transform code together with the registration code in a package,
 preferably called `pkg<tag>` and with `pkgcfg` in it's list of keywords, so
