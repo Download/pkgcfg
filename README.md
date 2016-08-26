@@ -1,4 +1,4 @@
-# pkgcfg <sup><sub>0.3.5</sub></sup>
+# pkgcfg <sup><sub>0.3.7</sub></sup>
 ## One configuration to rule them all
 
 ![logo](https://rawgit.com/Download/pkgcfg/0.3.5/logo.png)
