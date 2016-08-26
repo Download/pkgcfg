@@ -1,5 +1,9 @@
 # pkgcfg <sup><sub>0.3.5</sub></sup>
-**One configuration to rule them all**
+## One configuration to rule them all
+
+![logo](https://rawgit.com/Download/pkgcfg/0.3.5/logo.png)
+
+<sup><sub><sup><sub>.</sub></sup></sub></sup>
 
 ## Install
 ```sh
