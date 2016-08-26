@@ -1,6 +1,6 @@
 {
   "name": "pkgcfg",
-  "version": "0.3.5",
+  "version": "0.3.4",
   "description": "Move those pesky configuration files to your package.json with pkgcfg",
   "main": "pkgcfg.js",
   "repository": {
