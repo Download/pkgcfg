@@ -10,22 +10,104 @@ describe('pkgcfg', function(){
 	});
 
 	var pkg = pkgcfg();
-	
+
 	it('returns an object representation of package.json', function(){
 		expect(pkg).to.have.a.property('name');
 		expect(pkg.name).to.equal('pkgcfg');
 		expect(pkg).to.have.a.property('version');
 		expect(pkg).to.have.a.property('description');
 	});
-	
+
 	// "calls-transform": "{test}",
 	it('calls transform functions associated to tags that it encounters during parsing', function(){
 		log.info('{test} => calls test()');
+		var called = false;
 		function test(pkg, node) {called = true;}
 		pkgcfg.registry.register('test', test);
 		try {
 			var pkg = pkgcfg();
 			expect(called).to.equal(true);
+		} finally {pkgcfg.registry.unregister('test', test);}
+	});
+
+	// "calls-transform-with-dash": "{test-with-dash}",
+	it('calls transform functions with names containing a dash', function(){
+		log.info('{test-with-dash} => calls test()');
+		var called = false;
+		function test(pkg, node) {called = true;}
+		pkgcfg.registry.register('test-with-dash', test);
+		try {
+			var pkg = pkgcfg();
+			expect(called).to.equal(true);
+		} finally {pkgcfg.registry.unregister('test-with-dash', test);}
+	});
+
+	// "calls-transform-with-colon": "{test:with:colon}",
+	it('calls transform functions with names containing a colon', function(){
+		log.info('{test:with:colon} => calls test()');
+		var called = false;
+		function test(pkg, node) {called = true;}
+		pkgcfg.registry.register('test:with:colon', test);
+		try {
+			var pkg = pkgcfg();
+			expect(called).to.equal(true);
+		} finally {pkgcfg.registry.unregister('test:with:colon', test);}
+	});
+
+	// "calls-transform-with-dot": "{test.with.dot}",
+	it('calls transform functions with names containing a dot', function(){
+		log.info('{test.with.dot} => calls test()');
+		var called = false;
+		function test(pkg, node) {called = true;}
+		pkgcfg.registry.register('test.with.dot', test);
+		try {
+			var pkg = pkgcfg();
+			expect(called).to.equal(true);
+		} finally {pkgcfg.registry.unregister('test.with.dot', test);}
+	});
+
+	// "calls-transform-with-quote": "{test'with'quote}",
+	it('calls transform functions with names containing a quote', function(){
+		log.info("{test'with'quote} => calls test()");
+		var called = false;
+		function test(pkg, node) {called = true;}
+		pkgcfg.registry.register("test'with'quote", test);
+		try {
+			var pkg = pkgcfg();
+			expect(called).to.equal(true);
+		} finally {pkgcfg.registry.unregister("test'with'quote", test);}
+	});
+
+	// "yields-text-unmodified-for-unmatched-tags": "{test}",
+	it('yields text unmodified for unmatched tags', function(){
+		log.info('{test} => unmatched tag, yields text unmodified');
+		var pkg = pkgcfg();
+		expect(pkg.test['yields-text-unmodified-for-unmatched-tags']).to.equal('{test}');
+	});
+
+	// "yields-undefined-for-matched-tags-returning-undefined": "{test}",
+	it('yields undefined for matched tags returning undefined', function(){
+		log.info('{test} => calls test(), yields undefined');
+		var called = false;
+		function test(pkg, node) {called = true; return undefined;}
+		pkgcfg.registry.register('test', test);
+		try {
+			var pkg = pkgcfg();
+			expect(called).to.equal(true);
+			expect(pkg.test['yields-undefined-for-matched-tags-returning-undefined']).to.equal(undefined);
+		} finally {pkgcfg.registry.unregister('test', test);}
+	});
+
+	// "yields-null-for-matched-tags-returning-null": "{test-with-matched-tag-returning-null}",
+	it('yields \'null\' for matched tags returning null', function(){
+		log.info('{test} => calls test(), yields null');
+		var called = false;
+		function test() {called = true; return null;}
+		pkgcfg.registry.register('test', test);
+		try {
+			var pkg = pkgcfg();
+			expect(called).to.equal(true);
+			expect(pkg.test['yields-null-for-matched-tags-returning-null']).to.equal(null);
 		} finally {pkgcfg.registry.unregister('test', test);}
 	});
 
@@ -111,6 +193,21 @@ describe('pkgcfg', function(){
 		} finally {pkgcfg.registry.unregister('test-with-unbalanced-close', test);}
 	});
 
+	// "calls-transform-with-unbalanced-close": "{test-with-unbalanced-close 'unbalanced } close'}",
+	it('calls transform functions with quoted unbalanced close markers', function(){
+		log.info('{test-with-unbalanced-close \'unbalanced } close\'} => calls test(\'some\', \'list\')');
+		var called = false;
+		function test(pkg, node, arg) {
+			expect(arg).to.be.a('string');
+			expect(arg).to.equal('unbalanced } close');
+			called = true;
+		}
+		pkgcfg.registry.register('test-with-unbalanced-close', test);
+		try {
+			var pkg = pkgcfg();
+			expect(called).to.equal(true);
+		} finally {pkgcfg.registry.unregister('test-with-unbalanced-close', test);}
+	});
 
 	it('maintains a registry of package transforms', function(){
 		expect(pkgcfg).to.have.a.property('registry');
@@ -159,7 +256,6 @@ describe('pkgcfg', function(){
 			it('returns an arry of registered package transform tags', function(){
 				var tags = pkgcfg.registry.getTransformTags();
 				expect(tags.length).to.equal(2);
-				expect(tags.indexOf('pkg')).to.not.equal(-1);
 				expect(tags.indexOf('hello')).to.not.equal(-1);
 			});
 		});
