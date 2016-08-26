@@ -1,6 +1,6 @@
 {
   "name": "pkgcfg",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Move those pesky configuration files to your package.json with pkgcfg",
   "main": "pkgcfg.js",
   "repository": {
@@ -46,7 +46,7 @@
     "indirect-loop": "@pkg.test.indirect-cyclic",
     "indirect-cyclic": "@pkg.test.indirect-loop",
     "register": "{hello}",
-	"tag-within-tag": "{echo {pkg name}}"
+    "tag-within-tag": "{echo {pkg name}}"
   },
   "keywords": [
     "package.json",
@@ -84,11 +84,11 @@
   "devDependencies": {
     "chai": "^3.4.1",
     "chalk": "^1.1.1",
-    "mocha": "^2.3.4",
+    "mocha": "^3.0.2",
     "picolog": "^1.0.0"
   },
   "dependencies": {
     "app-root-path": "^1.0.0",
-    "object-path": "^0.9.2"
+    "object-path": "^0.11.1"
   }
 }
