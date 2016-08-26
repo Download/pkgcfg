@@ -1,6 +1,6 @@
 {
   "name": "pkgcfg",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "description": "Move those pesky configuration files to your package.json with pkgcfg",
   "main": "pkgcfg.js",
   "repository": {
@@ -57,29 +57,9 @@
   "keywords": [
     "package.json",
     "configuration",
-    "pkgand",
-    "pkgarg",
     "pkgcfg",
-    "pkgempty",
     "pkgenv",
-    "pkgeq",
-    "pkgexp",
-    "pkgfor",
-    "pkggen",
-    "pkggt",
-    "pkggte",
-    "pkgif",
-    "pkglt",
-    "pkglte",
-    "pkgmerge",
-    "pkgneq",
-    "pkgneq",
-    "pkgnot",
-    "pkgop",
-    "pkgor",
-    "pkgpath",
-    "pkgtransform",
-    "pkgvar"
+    "pkgeval"
   ],
   "author": "Stijn de Witt",
   "license": "CC-BY-4.0",

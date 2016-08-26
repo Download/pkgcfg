@@ -39,7 +39,6 @@ pkgcfg.QuietError = function(msg) {
   Object.defineProperty(this, 'stack', {get: function(){return obj.stack;}});
 }
 pkgcfg.QuietError.prototype = Object.create(Error.prototype);
-pkgcfg.QuietError.prototype;
 pkgcfg.QuietError.prototype.constructor = pkgcfg.QuietError;
 
 
@@ -138,7 +137,7 @@ function tagBody(tokenstream) {
 						result.arg = result.arg.substring(1, result.arg.length-1);
 					}
 					return result;
-				} 
+				}
 				open--;
 			}
 			if (token === '\'') {
