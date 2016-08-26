@@ -13,10 +13,10 @@ _package.json:_
 ```json
 {
   "name": "my-project",
-  "version": 1.0.0,
+  "version": "1.0.0",
   "main": "src/my-project.js",
-  "build-min": "dist/{pkg name}.min.js",
-  "build-map": "dist/{pkg name}.min.js.map",
+  "min": "dist/{pkg name}.min.js",
+  "map": "dist/{pkg name}.min.js.map",
 }
 ```
 
@@ -24,12 +24,12 @@ Then, read your `package.json` with `pkgcfg`:
 ```js
 var pkgcfg = require('pkgcfg');
 var pkg = pkgcfg();
-console.info(pkg['build-min']); // 'dist/my-project.min.js'
-console.info(pkg['build-map']); // 'dist/my-project.min.js.map'
+console.info(pkg.min); // 'dist/my-project.min.js'
+console.info(pkg.map); // 'dist/my-project.min.js.map'
 ```
 
-Use the [built-in transform](#built-in-transforms) [pkg](#pkg--ref),  
-`npm install` one or more of the [external transforms](#external-transforms), or [roll your own]().
+Use [pkg](#pkg-ref) from the [built-in transforms](#built-in-transforms), `npm install`
+one or more of the [external transforms](#external-transforms), or [roll your own transforms](#roll-your-own).
 
 ## What is it?
 Inspired by an [article](http://blog.keithcirkel.co.uk/why-we-should-stop-using-grunt/) from Keith Cirkel
@@ -117,7 +117,7 @@ Finally, the list modifiers will let `pkgcfg` pass multiple arguments to the tra
 ## Built-in transforms
 The transforms listed below are part of `pkgcfg` itself and require no extra dependencies.
 
-### {pkg <ref>}
+### {pkg ref}
 Yields the value of the referenced JSON node.
 
 #### ref
