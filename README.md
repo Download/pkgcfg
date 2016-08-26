@@ -1,12 +1,12 @@
 # pkgcfg <sup><sub>0.3.5</sub></sup>
 **One configuration to rule them all**
 
-## install
+## Install
 ```sh
 npm install --save-dev pkgcfg
 ```
 
-## usage
+## Usage
 Add `pkgcfg transform tags` to your `package.json`:
 
 _package.json:_
@@ -152,6 +152,15 @@ a nested object. E.g.:
 ```
 In this example, `{pkg nested.object.array.1}` will yield `'element-1'`. For more details see the [object-path documentation](https://github.com/mariocasciaro/object-path).
 
+**NOTE:** Loops are not supported:
+```json
+{
+  "start": "{pkg end}",
+  "end": "{pkg start}"
+}
+```
+This will create an infinite loop and likely crash your program. Don't do this!
+
 ## External transforms
 This is an (incomplete) list of available `pkgcfg` transforms.
 By convention, the name of the external package needed to use the tag has the
@@ -165,7 +174,7 @@ and I will add it to this list.
 
 ### {env <name> <defaultValue>}
 Reference environment variables.
-* [pkgenv](https://www.npmjs.com/package/pkgenv)
+* `npm install --save-dev` [pkgenv](https://www.npmjs.com/package/pkgenv)
 
 #### name
 Optional String. The name of the environment variable to read.
@@ -176,7 +185,7 @@ the given `name` exists. If not specified the tag text will be returned
 unmodified, except when `name` was also not specified in which case the
 empty string is used as default value.
 
-### examples
+#### examples
 ```json
 {
   "ex1": "{env PATH}",
@@ -194,7 +203,7 @@ empty string is used as default value.
 
 ### {eval <expr>}
 Evaluate Javascript expressions.
-* [pkgeval](https://www.npmjs.com/package/pkgeval)
+* `npm install --save-dev` [pkgeval](https://www.npmjs.com/package/pkgeval)
 
 #### expr
 Required String. The expression to evaluate.
@@ -282,9 +291,10 @@ Pkgcfg assumes that most transforms register themselves upon first `require` and
 are never unregistered. However, in some scenario's (e.g. testing) it may be
 desirable to call `unregister` to unregister the transform again:
 
-```
+```js
 pkgcfg.registry.unregister('env', pkgenv);
 ```
+
 ### (Optional) Publish your transform to NPM
 Place your transform code together with the registration code in a package,
 preferably called `pkg<tag>` and with `pkgcfg` in it's list of keywords, so
