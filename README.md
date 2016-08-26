@@ -152,7 +152,7 @@ a nested object. E.g.:
 ```
 In this example, `{pkg nested.object.array.1}` will yield `'element-1'`. For more details see the [object-path documentation](https://github.com/mariocasciaro/object-path).
 
-## external transforms
+## External transforms
 This is an (incomplete) list of available `pkgcfg` transforms.
 By convention, the name of the external package needed to use the tag has the
 form `pkg{tag}`, where `{tag}` is the name of the tag. For example, the `{env}`
@@ -160,15 +160,55 @@ tag is contained in the package `pkgenv`, the `{eval}` tag in package `pkgeval` 
 
 Do you know of an available `pkgcfg` transform that's not in this list?
 Please let me know by reporting an issue (or better yet, a Pull Request) to
-this project's [GitHub Issue Tracker](https://github.com/download/pkgcfg/issues).
+this project's [GitHub Issue Tracker](https://github.com/download/pkgcfg/issues),
+and I will add it to this list.
 
 ### {env <name> <defaultValue>}
 Reference environment variables.
 * [pkgenv](https://www.npmjs.com/package/pkgenv)
 
+#### name
+Optional String. The name of the environment variable to read.
+
+#### defaultValue
+Optional String. The default value to use when no environment variable with
+the given `name` exists. If not specified the tag text will be returned
+unmodified, except when `name` was also not specified in which case the
+empty string is used as default value.
+
+### examples
+```json
+{
+  "ex1": "{env PATH}",
+  "ex2": "{env DOES_NOT_EXIST}",
+  "ex3": "{env DOES_NOT_EXIST ''}",
+  "ex4": "{env}"
+}
+```
+* `ex1` will be resolved to the contents of the `PATH` environment variable.
+* `ex2` will be resolved to `'{env DOES_NOT_EXIST}'`
+* `ex3` will be resolved to `''` (empty string)
+* `ex4` will be resolved to the contents of `process.env.NODE_ENV`,
+   or to `''` (empty string) if `NODE_ENV` is not set.
+
+
 ### {eval <expr>}
 Evaluate Javascript expressions.
 * [pkgeval](https://www.npmjs.com/package/pkgeval)
+
+#### expr
+Required String. The expression to evaluate.
+
+#### examples
+```json
+{
+  "data": 8,
+  "ex1": "{eval 3 > 5}",
+  "ex2": "{eval {pkg data} > 5}",
+}
+```
+* `ex1` will be resolved to `false`.
+* `ex2` will be resolved to `true`
 
 
 ## Roll your own
@@ -211,23 +251,23 @@ function pkgenv(pkg, node, name, defaultValue) {
 
 Of note here is the `QuietError` we are throwing. Normally, when a pkgcfg transform throws
 an error, it is logged at the ERROR level (using [picolog](https://npmjs.com/package/picolog)
-when installed, or the `console`) otherwise. Using QuietError, we can signal to `pkgcfg` that
+when installed, or the `console` otherwise). Using QuietError, we can signal to `pkgcfg` that
 this error is not serious and it will be logged at the DEBUG level (if `picolog` is installed),
 or not at all.
 
 By throwing an error, we indicate that the transform did not produce a valid result. This makes
 `pkgcfg` insert the original text into the result text, instead of the result of the transform.
-By doing this, we make debugging easier. Let's say the environment variable `MYAPP` is not defined,
+By doing this, we make debugging easier. Let's say the environment variable `MY_ENV_VAR` is not defined,
 if we read some JSON value that referenced it, we will get
 
 ```js
-"my-key": "my value: {env MYAPP}"
+"my-key": "my value: {env MY_ENV_VAR}"
 ```
-instead of just `"my value: "`. It will make it clear that env var `MYAPP` did not exist.
+instead of just `"my value: "`. It will make it clear that env var `MY_ENV_VAR` did not exist.
 If you want it to return an empty string instead, just pass that as the `defaultValue`:
 
 ```js
-"my-key": "my value: {env MYAPP ''}"
+"my-key": "my value: {env MY_ENV_VAR ''}"
 ```
 would yield `"my value: "`.
 
