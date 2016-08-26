@@ -1,4 +1,4 @@
-# pkgcfg <sup><sub>0.3.7</sub></sup>
+# pkgcfg <sup><sub>0.3.8</sub></sup>
 ## One configuration to rule them all
 
 [![npm](https://img.shields.io/npm/v/pkgcfg.svg?maxAge=2592000)](https://npmjs.com/package/pkgcfg)
