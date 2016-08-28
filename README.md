@@ -199,9 +199,7 @@ E.G.: `npm install --save pkgenv`
 ### Make sure the tags from those packages are available for use
 * `require` the package before using `pkgcfg`, **or**
 * *register* the tags in `package.json` (**recommended**)
-
 <sup><sub><sup><sub>.</sub></sup></sub></sup>
-
 #### require an external tag
 Just call `require` before you call `pkgcfg`:
 
@@ -239,13 +237,13 @@ you a convenient way to signal that `pkgcfg` is used, and with which external ta
 
 ## External tags
 
-### {env (name, [defaultValue])}
+### {[env](https://www.npmjs.com/package/pkgenv) (name, [defaultValue])}
 Reference environment variables.
 * `npm install --save` [pkgenv](https://www.npmjs.com/package/pkgenv)
 
-### {eval expr}
+### {[eval](https://www.npmjs.com/package/pkgeval) expr}
 Evaluate Javascript expressions.
-* `npm install --save` [pkgeval](https://www.npmjs.com/package/pkgeval)
+* `npm install --save` pkgeval
 
 ### Anything missing?
 Do you know of an available `pkgcfg` tag that's not in this list?
