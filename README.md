@@ -180,8 +180,9 @@ tag is contained in the package `pkgenv`, the `{eval}` tag in package `pkgeval` 
 
 ### Using external tags
 If you are using external tags, you need to:
-# `npm install` those packages. E.G.: `npm install --save pkgenv`
-# Make sure the tags from those packages are available for use
+
+1. `npm install` those packages. E.G.: `npm install --save pkgenv`
+2. Make sure the tags from those packages are available for use
    * `require` the package before using `pkgcfg`, or
    * *register* the tags in `package.json` (**recommended**)
 
