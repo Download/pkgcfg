@@ -2,7 +2,6 @@
 var fs = require('fs');
 var objectPath = require("object-path");
 var log; try {require.resolve('picolog'); log=require('picolog');} catch(e){}
-
 var global = typeof window == 'object' ? window : (typeof global == 'object' ? global : this);
 
 function pkgcfg(pkg) {
@@ -12,24 +11,6 @@ function pkgcfg(pkg) {
 	processed = process(pkg, root);
 	return processed;
 }
-
-var registeredTransforms = {};
-pkgcfg.registry = {
-	register: register,
-	unregister: unregister,
-	getTransform: getTransform,
-	getTransformTags: getTransformTags
-};
-
-
-function pkg(pkg, node, path) {
-	var result = objectPath.get(pkg, path);
-	if (result === undefined) {throw new pkgcfg.QuietError('{pkg ' + path + '} cannot be resolved.');}
-	return result;
-}
-
-pkgcfg.registry.register('pkg', pkg);
-
 
 pkgcfg.QuietError = function(msg) {
   var obj = {};
@@ -41,9 +22,22 @@ pkgcfg.QuietError = function(msg) {
 pkgcfg.QuietError.prototype = Object.create(Error.prototype);
 pkgcfg.QuietError.prototype.constructor = pkgcfg.QuietError;
 
+function pkg(pkg, node, path) {
+	var result = objectPath.get(pkg, path);
+	if (result === undefined) {throw new pkgcfg.QuietError('{pkg ' + path + '} cannot be resolved.');}
+	return result;
+}
 
+pkgcfg.registry = {
+	register: register,
+	unregister: unregister,
+	getTransform: getTransform,
+	getTransformTags: getTransformTags
+};
+
+var registeredTransforms = {};
+pkgcfg.registry.register('pkg', pkg);
 module.exports = pkgcfg;
-
 
 // IMPLEMENTATION //
 
@@ -77,7 +71,7 @@ function processObject(pkg, node) {
 
 function processString(pkg, node) {
 	var next, input = node, result = [], complex=false;
-	while ((next = nextTag(input)) !== null) {
+	while ((next = nextTag(pkg, input)) !== null) {
 		var before = input.substring(0, next.idx);
 		if (before) {result.push(before);}
 		var remaining = input.substring(next.idx + next.tag.length + 1);
@@ -101,8 +95,8 @@ function processString(pkg, node) {
 	return complex ? (result.length === 1 ? result[0] : result) : result.join('');
 }
 
-function nextTag(tokenstream) {
-	var tags = Object.keys(registeredTransforms);
+function nextTag(pkg, tokenstream) {
+	var tags = ((pkg && pkg.pkgcfg && pkg.pkgcfg.tags) || []).concat(Object.keys(registeredTransforms));
 	var NOTFOUND = 999999999;
 	var next = {tag:null, idx:NOTFOUND};
 	for (var i=0; i<tags.length; i++) {
@@ -116,9 +110,19 @@ function nextTag(tokenstream) {
 	return next.tag ? next : null;
 }
 
+function loadTag(pkg, tag) {
+	try {
+		require('pkg' + tag);
+		if (Object.keys(registeredTransforms).indexOf(tag) === -1) {
+			throw new Error('Succesfully loaded package pkg' + tag + ', but it did not register a tag function for tag `{' + tag + '}`.');
+		}
+	}
+	catch(e){throw new Error('Unable to load pkgcfg transform for tag `' + tag + '`: ' + e.message + '\nTry: npm install pkg' + tag);}
+}
+
 function tagBody(tokenstream) {
 	// loop through the string, parsing it as we go through it
-	// return the fully resolved tagBody, or null if we encounter illegal state
+	// return the fully resolved tagBody
 	var result = {arg:null, end:-1};
 	var inString=false;
 	var esc = false;
@@ -163,25 +167,28 @@ function tagBody(tokenstream) {
 
 function transform(pkg, node, tag, arg) {
 	try {
+		if (! registeredTransforms[tag]) {loadTag(pkg, tag)}
 		var args = [pkg, node];
-		if (typeof arg == 'string') {
-			var a = arg.trim();
-			if (((a[0] === '[') && a[a.length -1] === ']') ||
-				((a[0] === '{') && a[a.length -1] === '}')) {
-				try {arg = JSON.parse(convertQuotes(a));} catch(e){}
-				args.push(arg);
-			}
-			else if ((a[0] === '(') && a[a.length -1] === ')') {
-				a = '[' + a.substring(1, a.length -1) + ']';
-				try {arg = JSON.parse(convertQuotes(a));} catch(e){}
-				Array.prototype.push.apply(args, arg);
+		if (arg !== null) {
+			if (typeof arg == 'string') {
+				var a = arg.trim();
+				if (((a[0] === '[') && a[a.length -1] === ']') ||
+					((a[0] === '{') && a[a.length -1] === '}')) {
+					try {arg = JSON.parse(convertQuotes(a));} catch(e){}
+					args.push(arg);
+				}
+				else if ((a[0] === '(') && a[a.length -1] === ')') {
+					a = '[' + a.substring(1, a.length -1) + ']';
+					try {arg = JSON.parse(convertQuotes(a));} catch(e){}
+					Array.prototype.push.apply(args, arg);
+				}
+				else {
+					args.push(arg);
+				}
 			}
 			else {
 				args.push(arg);
 			}
-		}
-		else {
-			args.push(arg);
 		}
 		var result = registeredTransforms[tag].apply(global, args);
 		log && log.log('Package transform: %s(%s) => ', tag, args, result);

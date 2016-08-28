@@ -20,7 +20,7 @@ describe('pkgcfg', function(){
 
 	// "calls-transform": "{test}",
 	it('calls transform functions associated to tags that it encounters during parsing', function(){
-		log.info('{test} => calls test()');
+		log.info('{test} => calls test(pkg, node)');
 		var called = false;
 		function test(pkg, node) {called = true;}
 		pkgcfg.registry.register('test', test);
@@ -32,7 +32,7 @@ describe('pkgcfg', function(){
 
 	// "calls-transform-with-dash": "{test-with-dash}",
 	it('calls transform functions with names containing a dash', function(){
-		log.info('{test-with-dash} => calls test()');
+		log.info('{test-with-dash} => calls test(pkg, node)');
 		var called = false;
 		function test(pkg, node) {called = true;}
 		pkgcfg.registry.register('test-with-dash', test);
@@ -44,7 +44,7 @@ describe('pkgcfg', function(){
 
 	// "calls-transform-with-colon": "{test:with:colon}",
 	it('calls transform functions with names containing a colon', function(){
-		log.info('{test:with:colon} => calls test()');
+		log.info('{test:with:colon} => calls test(pkg, node)');
 		var called = false;
 		function test(pkg, node) {called = true;}
 		pkgcfg.registry.register('test:with:colon', test);
@@ -56,7 +56,7 @@ describe('pkgcfg', function(){
 
 	// "calls-transform-with-dot": "{test.with.dot}",
 	it('calls transform functions with names containing a dot', function(){
-		log.info('{test.with.dot} => calls test()');
+		log.info('{test.with.dot} => calls test(pkg, node)');
 		var called = false;
 		function test(pkg, node) {called = true;}
 		pkgcfg.registry.register('test.with.dot', test);
@@ -68,7 +68,7 @@ describe('pkgcfg', function(){
 
 	// "calls-transform-with-quote": "{test'with'quote}",
 	it('calls transform functions with names containing a quote', function(){
-		log.info("{test'with'quote} => calls test()");
+		log.info("{test'with'quote} => calls test(pkg, node)");
 		var called = false;
 		function test(pkg, node) {called = true;}
 		pkgcfg.registry.register("test'with'quote", test);
@@ -87,7 +87,7 @@ describe('pkgcfg', function(){
 
 	// "yields-undefined-for-matched-tags-returning-undefined": "{test}",
 	it('yields undefined for matched tags returning undefined', function(){
-		log.info('{test} => calls test(), yields undefined');
+		log.info('{test} => calls test(pkg, node), yields undefined');
 		var called = false;
 		function test(pkg, node) {called = true; return undefined;}
 		pkgcfg.registry.register('test', test);
@@ -100,7 +100,7 @@ describe('pkgcfg', function(){
 
 	// "yields-null-for-matched-tags-returning-null": "{test-with-matched-tag-returning-null}",
 	it('yields \'null\' for matched tags returning null', function(){
-		log.info('{test} => calls test(), yields null');
+		log.info('{test} => calls test(pkg, node), yields null');
 		var called = false;
 		function test() {called = true; return null;}
 		pkgcfg.registry.register('test', test);
@@ -113,7 +113,7 @@ describe('pkgcfg', function(){
 
 	// "calls-transform-with-arg": "{test-with-arg some arg}",
 	it('calls transform functions with a string argument', function(){
-		log.info('{test-with-arg some arg} => calls test(\'some arg\')');
+		log.info('{test-with-arg some arg} => calls test(pkg, node, \'some arg\')');
 		var called = false;
 		function test(pkg, node, arg) {
 			expect(arg).to.equal('some arg');
@@ -125,6 +125,22 @@ describe('pkgcfg', function(){
 			expect(called).to.equal(true);
 		} finally {pkgcfg.registry.unregister('test-with-arg', test);}
 	});
+
+	// "calls-transform-with-default-arg": "{test-with-default-arg}",
+	it('calls transform functions with a default argument', function(){
+		log.info('{test-with-default-arg} => calls test(pkg, node)');
+		var called = false;
+		function test(pkg, node, arg='some arg') {
+			expect(arg).to.equal('some arg');
+			called = true;
+		}
+		pkgcfg.registry.register('test-with-default-arg', test);
+		try {
+			var pkg = pkgcfg();
+			expect(called).to.equal(true);
+		} finally {pkgcfg.registry.unregister('test-with-default-arg', test);}
+	});
+
 
 	// "calls-transform-with-arg-object": "{test-with-arg-object {'some':'object'}}",
 	it('calls transform functions with an object argument', function(){
