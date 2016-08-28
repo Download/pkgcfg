@@ -1,6 +1,6 @@
 {
   "name": "pkgcfg",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "Move those pesky configuration files to your package.json with pkgcfg",
   "main": "pkgcfg.js",
   "repository": {
@@ -33,7 +33,6 @@
     "yields-null-for-matched-tags-returning-null": "{test}",
     "yields-empty-string-for-matched-tags-returning-empty-string": "{test}",
     "calls-transform-with-arg": "{test-with-arg some arg}",
-    "calls-transform-with-default-arg": "{test-with-default-arg}",
     "calls-transform-with-arg-object": "{test-with-arg-object {'some':'object'}}",
     "calls-transform-with-arg-array": "{test-with-arg-array ['some','array']}",
     "calls-transform-with-arg-list": "{test-with-arg-list ('some','list')}",

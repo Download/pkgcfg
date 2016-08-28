@@ -126,22 +126,6 @@ describe('pkgcfg', function(){
 		} finally {pkgcfg.registry.unregister('test-with-arg', test);}
 	});
 
-	// "calls-transform-with-default-arg": "{test-with-default-arg}",
-	it('calls transform functions with a default argument', function(){
-		log.info('{test-with-default-arg} => calls test(pkg, node)');
-		var called = false;
-		function test(pkg, node, arg='some arg') {
-			expect(arg).to.equal('some arg');
-			called = true;
-		}
-		pkgcfg.registry.register('test-with-default-arg', test);
-		try {
-			var pkg = pkgcfg();
-			expect(called).to.equal(true);
-		} finally {pkgcfg.registry.unregister('test-with-default-arg', test);}
-	});
-
-
 	// "calls-transform-with-arg-object": "{test-with-arg-object {'some':'object'}}",
 	it('calls transform functions with an object argument', function(){
 		log.info('{test-with-arg-object {\'some\':\'object\'}} => calls test({some:\'object\'})');
