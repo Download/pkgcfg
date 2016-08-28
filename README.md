@@ -128,7 +128,7 @@ Finally, the list modifiers will let `pkgcfg` pass multiple arguments to the tag
 ## Built-in tags
 The tags listed below are part of `pkgcfg` itself and require no extra dependencies.
 
-### {pkg ref}
+### {**pkg** ref}
 Yields the value of the referenced JSON node.
 
 #### ref
@@ -222,11 +222,11 @@ you a convenient way to signal that `pkgcfg` is used, and with which external ta
 
 ### List of external tags
 
-#### {env (name, [defaultValue])}
+#### {**env** (name, [defaultValue])}
 Reference environment variables.
 * `npm install --save` [pkgenv](https://www.npmjs.com/package/pkgenv)
 
-#### {eval expr}
+#### {**eval** expr}
 Evaluate Javascript expressions.
 * `npm install --save` [pkgeval](https://www.npmjs.com/package/pkgeval)
 
