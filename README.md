@@ -243,7 +243,7 @@ Reference environment variables.
 
 ### {[eval](https://www.npmjs.com/package/pkgeval) expr}
 Evaluate Javascript expressions.
-* `npm install --save` pkgeval
+* `npm install --save` [pkgeval](https://www.npmjs.com/package/pkgeval)
 
 ### Anything missing?
 Do you know of an available `pkgcfg` tag that's not in this list?
