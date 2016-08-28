@@ -1,4 +1,4 @@
-# pkgcfg <sup><sub>0.4.0</sub></sup>
+# pkgcfg <sup><sub>0.4.1</sub></sup>
 ## One configuration to rule them all
 
 [![npm](https://img.shields.io/npm/v/pkgcfg.svg?maxAge=2592000)](https://npmjs.com/package/pkgcfg)
@@ -13,12 +13,16 @@
 
 <sup><sub><sup><sub>.</sub></sup></sub></sup>
 
+
 ## Install
+
 ```sh
 npm install --save pkgcfg
 ```
 
+
 ## Usage
+
 Add `pkgcfg` `tags` to your `package.json`:
 
 _package.json:_
@@ -42,7 +46,9 @@ console.info(pkg.map); // 'dist/my-project.min.js.map'
 Use [pkg](#pkg-ref) from the [built-in tags](#built-in-tags), `npm install`
 one or more of the [external tags](#external-tags), or [roll your own tags](#roll-your-own).
 
+
 ## What is it?
+
 Inspired by an [article](http://blog.keithcirkel.co.uk/why-we-should-stop-using-grunt/) from Keith Cirkel
 promoting the use of `npm` for build scripting and the use of `package.json` for configuration, I tried to
 follow his advice. But I quickly learned the downside of JSON as a format, because it is completely static
@@ -50,7 +56,9 @@ and lacks even the simplest dynamic behavior, such as referencing other nodes in
 environment variables, simple conditionals etc. `pkgcfg` is a pluggable system to allow simple dynamic
 behavior to be specified in the JSON document, which is then executed by `pkgcfg` when it loads the JSON.
 
+
 ## How does it work?
+
 In the example above, `{pkg name}` tells `pkgcfg` that this snippet should be *transformed* using
 the tag function `pkg`, which is built-in and implements a simple reference mechanism based
 on [object-path](https://npmjs.org/package/object-path).
@@ -125,10 +133,13 @@ Finally, the list modifiers will let `pkgcfg` pass multiple arguments to the tag
 
 `tag` will receive it's payload in three arguments instead of the usual one.
 
+
 ## Built-in tags
+
 The tags listed below are part of `pkgcfg` itself and require no extra dependencies.
 
-### {pkg <sup>ref</sup>}
+
+### {pkg ref}
 Yields the value of the referenced JSON node.
 
 #### ref
@@ -171,20 +182,25 @@ In this example, `{pkg nested.object.array.1}` will yield `'element-1'`. For mor
 ```
 This will create an infinite loop and likely crash your program. Don't do this!
 
-## External tags
+
+## Using external tags
+
 `pkgcfg` allows you to use tags coming from external packages.
 
 By convention, the name of the external package needed to use the tag has the
 form `pkg{tag}`, where `{tag}` is the name of the tag. For example, the `{env}`
 tag is contained in the package `pkgenv`, the `{eval}` tag in package `pkgeval` etc.
 
-### Using external tags
-If you are using external tags, you need to:
+To use tags from external packages:
 
-1. `npm install` those packages. E.G.: `npm install --save pkgenv`
-2. Make sure the tags from those packages are available for use
-   * `require` the package before using `pkgcfg`, or
-   * *register* the tags in `package.json` (**recommended**)
+### `npm install` those packages.
+E.G.: `npm install --save pkgenv`
+
+### Make sure the tags from those packages are available for use
+* `require` the package before using `pkgcfg`, **or**
+* *register* the tags in `package.json` (**recommended**)
+
+<sup><sub><sup><sub>.</sub></sup></sub></sup>
 
 #### require an external tag
 Just call `require` before you call `pkgcfg`:
@@ -207,7 +223,7 @@ should be an array of tags coming from external packages:
   }
 }
 ```
-Then you don't need to manually require the external packages; `pkgcfg` will
+Now you no longer need to manually require the external packages; `pkgcfg` will
 apply the naming conventions and automatically require `pkgenv`:
 
 ```js
@@ -220,13 +236,14 @@ project, the tag you added will be available in all those places, without you
 having to add `require` calls in all those places. And of course it also gives
 you a convenient way to signal that `pkgcfg` is used, and with which external tags.
 
-### List of external tags
 
-#### {env <sup>(name, [defaultValue])</sup>}
+## External tags
+
+### {env (name, [defaultValue])}
 Reference environment variables.
 * `npm install --save` [pkgenv](https://www.npmjs.com/package/pkgenv)
 
-#### {eval <sup>expr</sup>}
+### {eval expr}
 Evaluate Javascript expressions.
 * `npm install --save` [pkgeval](https://www.npmjs.com/package/pkgeval)
 
@@ -238,6 +255,7 @@ and I will add it to this list.
 
 
 ## Roll your own
+
 Writing your own tags is super easy! Let's write one that yields the value
 of some environment variable.
 
@@ -267,6 +285,7 @@ function pkgenv(pkg, node, name='NODE_ENV', defaultValue='') {
 	return process.env[name] || defaultValue;
 }
 ```
+
 
 ### Register the tag
 After we have created a tag function, we need to register it with `pkgcfg`:
@@ -302,12 +321,17 @@ Place your tag module in an NPM package, preferably called `pkg<tag>` and with
 Add some tests as well. Have a look at the [pkgenv](https://github.com/download/pkgenv)
 package to see an example.
 
+
 ### (Optional) Let me know!
 Add an issue in this project's [issue tracker](https://github.com/download/pkgcfg/issues)
 to let me know of your package and I will add it to the list of external packages above.
 
+
 ## Copyright
+
 Copyright 2016 by [Stijn de Witt](http://StijnDeWitt.com). Some rights reserved.
 
+
 ## License
+
 [Creative Commons Attribution 4.0 (CC-BY-4.0)](https://creativecommons.org/licenses/by/4.0/)
