@@ -222,11 +222,11 @@ you a convenient way to signal that `pkgcfg` is used, and with which external ta
 
 ### List of external tags
 
-#### {**env** (name, [defaultValue])}
+#### {env <sub><sup>(name, [defaultValue])</sup></sub>}
 Reference environment variables.
 * `npm install --save` [pkgenv](https://www.npmjs.com/package/pkgenv)
 
-#### {**eval** expr}
+#### {eval <sub><sup>expr</sup></sub>}
 Evaluate Javascript expressions.
 * `npm install --save` [pkgeval](https://www.npmjs.com/package/pkgeval)
 
