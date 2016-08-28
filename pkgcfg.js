@@ -7,7 +7,10 @@ var cfg = JSON.parse(fs.readFileSync(appRoot + '/package.json'))
 
 function pkgcfg(pkg) {
 	pkg = (typeof pkg == 'string' && JSON.parse(fs.readFileSync(pkg))) || pkg || cfg
-	return process(pkg, pkg, availableTags(pkg, cfg))
+	var tags = Object.keys(registeredTransforms)
+	addTags(tags, availableTags(cfg))
+	addTags(tags, pkg !== cfg && availableTags(pkg) || [])
+	return process(pkg, pkg, tags)
 }
 
 pkgcfg.QuietError = function(msg) {
@@ -92,12 +95,9 @@ function processString(pkg, node, tags) {
 }
 
 function nextTag(pkg, tokenstream, tags) {
-	var all = []
-	addTags(all, Object.keys(registeredTransforms))
-	addTags(all, tags)
 	var NOTFOUND = 999999999
 	var next = {tag:null, idx:NOTFOUND}
-	for (var i=0,tag; tag=all[i]; i++) {
+	for (var i=0,tag; tag=tags[i]; i++) {
 		var exp = new RegExp('{' + tag + '[\\s\\.\\}\\[\\{\\(]')
 		var idx = tokenstream.search(exp)
 		if ((idx !== -1) && (idx < next.idx) && (tokenstream[idx+tag.length+1])) {
@@ -108,12 +108,9 @@ function nextTag(pkg, tokenstream, tags) {
 	return next.tag ? next : null
 }
 
-function availableTags(pkg, cfg) {
+function availableTags(cfg) {
 	var tags = []
-	addTags(tags, pkg && pkg.pkgcfg && Object.keys(pkg.pkgcfg.tags) || [])
-	addTags(tags, pkg && pkg.devDependencies && extractTags(pkg.devDependencies) || [])
-	addTags(tags, pkg && pkg.dependencies && extractTags(pkg.dependencies) || [])
-	addTags(tags, cfg.pkgcfg && Object.keys(cfg.pkgcfg.tags) || [])
+	addTags(tags, cfg.pkgcfg && cfg.pkgcfg.tags && Object.keys(cfg.pkgcfg.tags) || [])
 	addTags(tags, cfg.devDependencies && extractTags(cfg.devDependencies) || [])
 	addTags(tags, cfg.dependencies && extractTags(cfg.dependencies) || [])
 	return tags
@@ -134,7 +131,7 @@ function addTags(tags, add) {
 }
 
 function loadTag(pkg, tag) {
-	var name = (pkg.pkgcfg && pkg.pkgcfg.tags[tag]) || (cfg.pkgcfg && cfg.pkgcfg.tags[tag]) || ('pkg' + tag)
+	var name = (pkg.pkgcfg && pkg.pkgcfg.tags && pkg.pkgcfg.tags[tag]) || (cfg.pkgcfg && cfg.pkgcfg.tags && cfg.pkgcfg.tags[tag]) || ('pkg' + tag)
 	try {
 		require(name)
 		if (! registeredTransforms[tag]) {
@@ -193,8 +190,8 @@ function tagBody(tokenstream) {
 
 function transform(pkg, node, tag, arg) {
 	try {
-		if (! registeredTransforms[tag]) {loadTag(pkg, tag)}
 		var args = [pkg, node]
+		if (! registeredTransforms[tag]) {loadTag(pkg, tag)}
 		if (arg !== null) {
 			if (typeof arg == 'string') {
 				var a = arg.trim()

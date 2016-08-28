@@ -1,4 +1,4 @@
-# pkgcfg <sup><sub>0.5.0</sub></sup>
+# pkgcfg <sup><sub>0.5.1</sub></sup>
 ## One configuration to rule them all
 
 [![npm](https://img.shields.io/npm/v/pkgcfg.svg?maxAge=2592000)](https://npmjs.com/package/pkgcfg)
@@ -209,6 +209,7 @@ Just call `require` before you call `pkgcfg`:
 require('pkgenv'); // <-- make sure `{env}` tag is available
 var pkg = require('pkgcfg')();
 ```
+
 #### have `pkgcfg` discover tags based on dependencies
 `pkgcfg` will look at the keys `dependencies` and `devDependencies` in your
 `package.json` and if they contain any packages whose name starts with `'pkg'`,
@@ -222,9 +223,10 @@ var pkg = require('pkgcfg')();
 ```
 
 #### register the tags in `package.json`
-You can explicitly register the tags you are using by adding an entry `pkgcfg`
-to your `package.json` with a `tags` attribute, which should be an array of
-tags coming from external packages:
+For tags coming from packages that don't follow the naming convention, you
+can explicitly register the tags you are using by adding an entry `pkgcfg`
+to your `package.json` with a `tags` attribute, which should be an object with
+the tag name as key and the name of the package this tag comes from as the value:
 
 ```json
 {
@@ -235,19 +237,13 @@ tags coming from external packages:
   }
 }
 ```
-`pkgcfg` will automatically require `pkgenv` when it encounters the `{env}` tag.
-No need to explicitly `require` the package containing the tag before using `pkgcfg`:
+`pkgcfg` will automatically `require('pkgenv')` when it encounters the `{env}` tag.
+No need to explicitly require it yourself:
 
 ```js
 // require('pkgenv'); // not needed, will be required automatically
 var pkg = require('pkgcfg')();
 ```
-
-The upside of this is that if you are using `pkgcfg` in multiple places in your
-project, the tag you added will be available in all those places, without you
-having to add `require` calls in all those places. And of course it also gives
-you a convenient way to signal that `pkgcfg` is used, and with which external tags.
-
 
 ## External tags
 
