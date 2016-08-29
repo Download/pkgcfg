@@ -1,4 +1,4 @@
-# pkgcfg <sup><sub>0.5.1</sub></sup>
+# pkgcfg <sup><sub>0.5.2</sub></sup>
 ## One configuration to rule them all
 
 [![npm](https://img.shields.io/npm/v/pkgcfg.svg?maxAge=2592000)](https://npmjs.com/package/pkgcfg)
@@ -289,7 +289,9 @@ Now implement the business logic of your tag. In this case it's some code to
 access `process.env` to read the environment. Here is the full function:
 
 ```js
-function pkgenv(pkg, node, name='NODE_ENV', defaultValue='') {
+function pkgenv(pkg, node, name, defaultValue) {
+  if (!name) {name = 'NODE_ENV'}
+  if (!defaultValue) {defaultValue = ''}
 	return process.env[name] || defaultValue;
 }
 ```
@@ -315,7 +317,9 @@ Using the knowledge from above, let's write the full `pkgenv` module:
 ```js
 var pkgcfg = require('pkgcfg');
 
-function pkgenv(pkg, node, name='NODE_ENV', defaultValue='') {
+function pkgenv(pkg, node, name, defaultValue) {
+  if (!name) {name = 'NODE_ENV'}
+  if (!defaultValue) {defaultValue = ''}
 	return process.env[name] || defaultValue;
 }
 
