@@ -1,8 +1,11 @@
 {
   "name": "pkgcfg",
-  "version": "0.5.2",
+  "version": "0.6.0",
   "description": "Move those pesky configuration files to your package.json with pkgcfg",
   "main": "pkgcfg.js",
+  "bin": {
+    "run": "./bin/run.js"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/download/pkgcfg.git"

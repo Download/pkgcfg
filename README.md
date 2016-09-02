@@ -1,4 +1,4 @@
-# pkgcfg <sup><sub>0.5.2</sub></sup>
+# pkgcfg <sup><sub>0.6.0</sub></sup>
 ## One configuration to rule them all
 
 [![npm](https://img.shields.io/npm/v/pkgcfg.svg?maxAge=2592000)](https://npmjs.com/package/pkgcfg)
@@ -33,18 +33,25 @@ _package.json:_
   "main": "src/my-project.js",
   "min": "dist/{pkg name}.min.js",
   "map": "dist/{pkg name}.min.js.map",
+  "dependencies": {
+    "pkgcfg": "^0.6.0"
+  }
 }
 ```
 
 Then, read your `package.json` with `pkgcfg`:
+
 ```js
 var pkg = require('pkgcfg')();
 console.info(pkg.min); // 'dist/my-project.min.js'
 console.info(pkg.map); // 'dist/my-project.min.js.map'
 ```
-
 Use [pkg](#pkg-ref) from the [built-in tags](#built-in-tags), `npm install`
-one or more of the [external tags](#external-tags), or [roll your own tags](#roll-your-own).
+one or more of the [external tags](#external-tags), or
+[roll your own tags](#roll-your-own). You can even
+[use pkgcfg tags in NPM run scripts](#using-pkgcfg-tags-in-NPM-run-scripts)!
+
+> Remember that the standard NPM tooling does not understand `pkgcfg` tags, so you can't use them in the `name`, `version`, `dependencies` etc fields.
 
 
 ## What is it?
@@ -337,6 +344,103 @@ package to see an example.
 ### (Optional) Let me know!
 Add an issue in this project's [issue tracker](https://github.com/download/pkgcfg/issues)
 to let me know of your package and I will add it to the list of external packages above.
+
+
+## Using pkgcfg tags in NPM run scripts
+
+Even though normal NPM tooling does not understand `pkgcfg` tags, you can still
+use them in the `scripts` section, via the `run` command that comes with *pkgcfg*:
+
+### run [script]
+
+_package.json:_
+```json
+{
+  "name": "my-project",
+  "version": "1.0.0",
+  "main": "src/my-project.js",
+  "scripts": {
+    "echo": "echo Hello, {pkg name} {pkg version}!"
+  },
+  "dependencies": {
+    "pkgcfg": "^0.6.0"
+  }
+}
+```
+
+You can call the `echo` script via the `run` command. The `run` command loads the
+`package.json` via `pkgcfg`, ensuring that the tags are processed:
+
+```sh
+$ run echo
+Hello, my-project 1.0.0!
+```
+
+This requires `pkgcfg` to be installed globally:
+
+```sh
+npm install -g pkgcfg
+```
+
+If, however, you are like me and don't like installing things globally, don't worry!
+You can also use `run` from within the scripts section itself!
+
+```json
+{
+  "name": "my-project",
+  "version": "1.0.0",
+  "main": "src/my-project.js",
+  "scripts": {
+    "echo": "run pkgcfg-echo",
+    "pkgcfg-echo": "echo Hello, {pkg name} {pkg version}!"
+  },
+  "dependencies": {
+    "pkgcfg": "^0.6.0"
+  }
+}
+```
+
+Now, you can call echo the old-fashioned way:
+
+```sh
+$ npm run echo
+
+> my-project@1.0.0 echo c:\ws\my-project
+> run pkgcfg-echo
+
+Hello, my-project 1.0.0!
+```
+
+I recommend you have a look at the [NPM scripts docs](https://docs.npmjs.com/misc/scripts) to
+learn how NPM treats the `scripts` section in your `package.json` before you dive in and
+start hacking. Avoid adding `pkgcfg` tags to the following standard NPM scripts, because they
+are expected to work using `npm [script]`, which they won't if you use tags there:
+
+* `publish`, `prepublish`, `postpublish`
+* `install`, `preinstall`, `postinstall`
+* `uninstall`, `preuninstall`, `postuninstall`
+* `version`, `preversion`, `postversion`
+* `test`, `pretest`, `posttest`
+* `start`, `prestart`, `poststart`
+* `stop`, `prestop`, `poststop`
+* `restart`, `prerestart`, `postrestart`
+
+You can still make use of `pkgcfg` for these scripts, just use `run` to run a different
+script and in that other script, use `pkgcfg` tags:
+
+```json
+{
+  "name": "my-project",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "run smart-start",
+    "smart-start": "echo Yippee! We can use pkgcfg tags in {pkg name}!"
+  },
+  "dependencies": {
+    "pkgcfg": "^0.6.0"
+  }
+}
+```
 
 
 ## Copyright
