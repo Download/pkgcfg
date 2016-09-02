@@ -280,7 +280,7 @@ of some environment variable.
 First, define a function that will contain the logic for your tag:
 
 ```js
-function pkgenv(pkg, node, name='NODE_ENV', defaultValue='') {
+function pkgenv(pkg, node, name, defaultValue) {
 
 }
 ```
@@ -346,6 +346,10 @@ package to see an example.
 ### (Optional) Let me know!
 Add an issue in this project's [issue tracker](https://github.com/download/pkgcfg/issues)
 to let me know of your package and I will add it to the list of external packages above.
+
+> I registered a whole bunch of names starting with `pkg` that I felt I wanted to
+> implement one day. If you want to make a certain tag and I have that name registered,
+> just drop me an issue and I'll transfer that name to you.
 
 <sup><sub><sup><sub>.</sub></sup></sub></sup>
 
