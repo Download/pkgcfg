@@ -1,4 +1,4 @@
-# pkgcfg <sup><sub>0.6.1</sub></sup>
+# pkgcfg <sup><sub>0.6.2</sub></sup>
 ## One configuration to rule them all
 
 [![npm](https://img.shields.io/npm/v/pkgcfg.svg)](https://npmjs.com/package/pkgcfg)
