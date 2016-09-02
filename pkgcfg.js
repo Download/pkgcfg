@@ -214,37 +214,33 @@ function transform(pkg, node, tag, arg) {
 			}
 		}
 		var result = registeredTransforms[tag].apply(global, args)
-		log && log.log('Package transform: %s(%s) => ', tag, args, result)
+		log && log.log('tag: %s(%s) => ', tag, args, result)
 		return result
 	}
 	catch(error) {
 		var err = error instanceof pkgcfg.QuietError
 			? log && log.debug || function(){}
 			: log && log.error || (typeof console == 'object') && console.error || function(){}
-		err('Error applying package transform %s(%s): ', tag, args, error)
+		err('Error applying tag {%s (%s)}: ', tag, args, error)
 		return node
 	}
 }
 
 function register(tag, func) {
-	log && log.assert(tag, 'Parameter `tag` is required when registering a package transform: ', tag)
+	log && log.assert(tag, 'Parameter `tag` is required: ', tag)
 	log && log.assert(typeof tag == 'string', 'Parameter `tag` must be a string: ', tag)
-	log && log.assert(!registeredTransforms[tag], 'A package transform with that tag is already registered: ', registeredTransforms[tag])
-	log && log.assert(['toString', 'valueOf', 'toJSON'].indexOf(tag) === -1, '`%s` is a reserved word and may not be used as a tag for a package transform.', tag)
-	var usedReservedChars = ['{','}','[',']','(',')'].filter(
-		function(x){
-			return tag.indexOf(x) !== -1
-		}
-	)
+	log && log.assert(!registeredTransforms[tag], 'Tag ' + tag + ' is already registered: ', registeredTransforms[tag])
+	log && log.assert(['toString', 'valueOf', 'toJSON'].indexOf(tag) === -1, '`%s` is a reserved word and may not be used as a tag.', tag)
+	var usedReservedChars = ['{','}','[',']','(',')'].filter(function(x){return tag.indexOf(x) !== -1})
 	log && log.assert(usedReservedChars.length === 0, 'Parameter `tag` contains reserved character(s): ', usedReservedChars)
-	log && log.assert(func, 'Parameter `func` is required when registering a package transform: ', func)
-	log && log.assert(typeof func == 'function', 'Parameter `func` must be a function when registering a package transform: ', func)
+	log && log.assert(func, 'Parameter `func` is required: ', func)
+	log && log.assert(typeof func == 'function', 'Parameter `func` must be a function: ', func)
 	registeredTransforms[tag] = func
 }
 
 function unregister(tag, func) {
-	log && log.assert(registeredTransforms[tag] && registeredTransforms[tag] === func, 'Unable to unregister the package transform. The supplied function is not currently registered with the supplied tag %s.', tag)
-	log && log.assert(['toString', 'valueOf', 'toJSON'].indexOf(tag) === -1, '`%s` is a reserved word and may not be used as a tag for a package transform.', tag)
+	log && log.assert(registeredTransforms[tag] && registeredTransforms[tag] === func, 'Unable to unregister the tag. The supplied function is not currently registered with the supplied tag %s.', tag)
+	log && log.assert(['toString', 'valueOf', 'toJSON'].indexOf(tag) === -1, '`%s` is a reserved word and may not be used as a tag.', tag)
 	delete registeredTransforms[tag]
 }
 
@@ -285,7 +281,7 @@ function convertQuotes(payload) {
 				result += token
 			}
 		}
-		else {
+		else { // ! inString
 			if (token === '\'') {
 				result += '"'
 				inString = true
