@@ -1,6 +1,6 @@
 {
   "name": "pkgcfg",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Move those pesky configuration files to your package.json with pkgcfg",
   "main": "pkgcfg.js",
   "bin": {
@@ -74,10 +74,10 @@
     "chai": "^3.4.1",
     "chalk": "^1.1.1",
     "mocha": "^3.0.2",
+    "object-path": "^0.11.2",
     "picolog": "^1.0.0"
   },
   "dependencies": {
-    "app-root-path": "^1.0.0",
-    "object-path": "^0.11.1"
+    "app-root-path": "^1.0.0"
   }
 }

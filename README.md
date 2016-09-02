@@ -1,4 +1,4 @@
-# pkgcfg <sup><sub>0.6.0</sub></sup>
+# pkgcfg <sup><sub>0.6.1</sub></sup>
 ## One configuration to rule them all
 
 [![npm](https://img.shields.io/npm/v/pkgcfg.svg?maxAge=2592000)](https://npmjs.com/package/pkgcfg)
@@ -42,7 +42,7 @@ _package.json:_
 Then, read your `package.json` with `pkgcfg`:
 
 ```js
-var pkg = require('pkgcfg')();
+var pkg = require('pkgcfg')(); // <-- note the extra pair of braces
 console.info(pkg.min); // 'dist/my-project.min.js'
 console.info(pkg.map); // 'dist/my-project.min.js.map'
 ```
@@ -229,6 +229,8 @@ named `'pkgenv'`, it will discover the tag `'env'`. No need to explicitly
 var pkg = require('pkgcfg')();
 ```
 
+> Auto-discovery should work for all external tags listed on this page.
+
 #### register the tags in `package.json`
 For tags coming from packages that don't follow the naming convention, you
 can explicitly register the tags you are using by adding an entry `pkgcfg`
@@ -345,45 +347,14 @@ package to see an example.
 Add an issue in this project's [issue tracker](https://github.com/download/pkgcfg/issues)
 to let me know of your package and I will add it to the list of external packages above.
 
+<sup><sub><sup><sub>.</sub></sup></sub></sup>
 
 ## Using pkgcfg tags in NPM run scripts
 
 Even though normal NPM tooling does not understand `pkgcfg` tags, you can still
-use them in the `scripts` section, via the `run` command that comes with *pkgcfg*:
+use them in the `scripts` section, via the `run` command that comes with `pkgcfg`.
 
 ### run [script]
-
-_package.json:_
-```json
-{
-  "name": "my-project",
-  "version": "1.0.0",
-  "main": "src/my-project.js",
-  "scripts": {
-    "echo": "echo Hello, {pkg name} {pkg version}!"
-  },
-  "dependencies": {
-    "pkgcfg": "^0.6.0"
-  }
-}
-```
-
-You can call the `echo` script via the `run` command. The `run` command loads the
-`package.json` via `pkgcfg`, ensuring that the tags are processed:
-
-```sh
-$ run echo
-Hello, my-project 1.0.0!
-```
-
-This requires `pkgcfg` to be installed globally:
-
-```sh
-npm install -g pkgcfg
-```
-
-If, however, you are like me and don't like installing things globally, don't worry!
-You can also use `run` from within the scripts section itself!
 
 ```json
 {
@@ -399,6 +370,7 @@ You can also use `run` from within the scripts section itself!
   }
 }
 ```
+> Note how we avoided using any `pkgcfg` tags in the `echo` script. It just uses `run` to call the `pkgcfg-echo` script.
 
 Now, you can call echo the old-fashioned way:
 
