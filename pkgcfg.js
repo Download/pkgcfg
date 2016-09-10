@@ -132,7 +132,7 @@ function addTags(tags, add) {
 }
 
 function loadTag(pkg, tag) {
-	var name = (pkg.pkgcfg && pkg.pkgcfg.tags && pkg.pkgcfg.tags[tag]) || (cfg.pkgcfg && cfg.pkgcfg.tags && cfg.pkgcfg.tags[tag]) || ('pkg' + tag)
+	var name = (pkg.pkgcfg && pkg.pkgcfg.tags && pkg.pkgcfg.tags[tag]) || (globalCfg && globalCfg.pkgcfg && globalCfg.pkgcfg.tags && globalCfg.pkgcfg.tags[tag]) || ('pkg' + tag)
 	try {
 		require(name)
 		if (! registeredTransforms[tag]) {

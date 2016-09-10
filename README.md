@@ -1,4 +1,4 @@
-# pkgcfg <sup><sub>0.7.0</sub></sup>
+# pkgcfg <sup><sub>0.7.1</sub></sup>
 ## One configuration to rule them all
 
 [![npm](https://img.shields.io/npm/v/pkgcfg.svg)](https://npmjs.com/package/pkgcfg)
@@ -34,7 +34,7 @@ _package.json:_
   "min": "dist/{pkg name}.min.js",
   "map": "dist/{pkg name}.min.js.map",
   "dependencies": {
-    "pkgcfg": "^0.7.0"
+    "pkgcfg": "^0.7.1"
   }
 }
 ```
@@ -375,7 +375,7 @@ use them in the `scripts` section, via the `run` command that comes with `pkgcfg
     "pkgcfg-echo": "echo Hello, {pkg name} {pkg version}!"
   },
   "dependencies": {
-    "pkgcfg": "^0.7.0"
+    "pkgcfg": "^0.7.1"
   }
 }
 ```
@@ -418,7 +418,7 @@ script and in that other script, use `pkgcfg` tags:
     "smart-start": "echo Yippee! We can use pkgcfg tags in {pkg name}!"
   },
   "dependencies": {
-    "pkgcfg": "^0.7.0"
+    "pkgcfg": "^0.7.1"
   }
 }
 ```
