@@ -1,4 +1,4 @@
-# pkgcfg <sup><sub>0.7.1</sub></sup>
+# pkgcfg <sup><sub>0.7.2</sub></sup>
 ## One configuration to rule them all
 
 [![npm](https://img.shields.io/npm/v/pkgcfg.svg)](https://npmjs.com/package/pkgcfg)
@@ -34,7 +34,7 @@ _package.json:_
   "min": "dist/{pkg name}.min.js",
   "map": "dist/{pkg name}.min.js.map",
   "dependencies": {
-    "pkgcfg": "^0.7.1"
+    "pkgcfg": "^0.7.2"
   }
 }
 ```
@@ -375,7 +375,7 @@ use them in the `scripts` section, via the `run` command that comes with `pkgcfg
     "pkgcfg-echo": "echo Hello, {pkg name} {pkg version}!"
   },
   "dependencies": {
-    "pkgcfg": "^0.7.1"
+    "pkgcfg": "^0.7.2"
   }
 }
 ```
@@ -418,10 +418,20 @@ script and in that other script, use `pkgcfg` tags:
     "smart-start": "echo Yippee! We can use pkgcfg tags in {pkg name}!"
   },
   "dependencies": {
-    "pkgcfg": "^0.7.1"
+    "pkgcfg": "^0.7.2"
   }
 }
 ```
+
+## Example project
+
+If you want a simple example project demonstrating how `pkgcfg` works, check out [pkgcfg-example](https://github.com/download/pkgcfg-example).
+
+
+## Issues
+
+Add an issue in this project's [issue tracker](https://github.com/download/pkgcfg/issues)
+to let me know of any problems you find, or questions you may have.
 
 
 ## Copyright
