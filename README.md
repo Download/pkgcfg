@@ -1,4 +1,4 @@
-# pkgcfg <sup><sub>0.6.2</sub></sup>
+# pkgcfg <sup><sub>0.7.0</sub></sup>
 ## One configuration to rule them all
 
 [![npm](https://img.shields.io/npm/v/pkgcfg.svg)](https://npmjs.com/package/pkgcfg)
@@ -34,7 +34,7 @@ _package.json:_
   "min": "dist/{pkg name}.min.js",
   "map": "dist/{pkg name}.min.js.map",
   "dependencies": {
-    "pkgcfg": "^0.6.0"
+    "pkgcfg": "^0.7.0"
   }
 }
 ```
@@ -204,18 +204,13 @@ To use tags from external packages:
 E.G.: `npm install --save pkgenv`
 
 ### Make sure the tags from those packages are available for use
-* `require` the package before using `pkgcfg`
-* have `pkgcfg` *discover* tags based on the dependencies in `package.json`
+Pkgcfg will only transform tags it knows about. There are three ways to let
+it know about tags coming from external packages:
+
+* have it *discover* tags based on the dependencies in `package.json`
 * *register* the tags in `package.json`
+* `require` the package before using `pkgcfg`
 <sup><sub><sup><sub>.</sub></sup></sub></sup>
-
-#### require an external tag
-Just call `require` before you call `pkgcfg`:
-
-```js
-require('pkgenv'); // <-- make sure `{env}` tag is available
-var pkg = require('pkgcfg')();
-```
 
 #### have `pkgcfg` discover tags based on dependencies
 `pkgcfg` will look at the keys `dependencies` and `devDependencies` in your
@@ -225,8 +220,7 @@ named `'pkgenv'`, it will discover the tag `'env'`. No need to explicitly
 `require` the package containing the tag before using `pkgcfg`:
 
 ```js
-// require('pkgenv'); // not needed, will be required automatically
-var pkg = require('pkgcfg')();
+var pkg = require('pkgcfg')(); // requires `pkgenv` automatically when needed
 ```
 
 > Auto-discovery should work for all external tags listed on this page.
@@ -250,9 +244,20 @@ the tag name as key and the name of the package this tag comes from as the value
 No need to explicitly require it yourself:
 
 ```js
-// require('pkgenv'); // not needed, will be required automatically
+var pkg = require('pkgcfg')(); // requires `pkgenv` automatically when needed
+```
+
+#### require an external tag
+This method is most explicit. It will work everywhere, but requires you to know
+beforehand which tags are used.
+
+Just call `require` before you call `pkgcfg`:
+
+```js
+require('pkgenv'); // <-- make sure `{env}` tag is available
 var pkg = require('pkgcfg')();
 ```
+
 
 ## External tags
 
@@ -370,7 +375,7 @@ use them in the `scripts` section, via the `run` command that comes with `pkgcfg
     "pkgcfg-echo": "echo Hello, {pkg name} {pkg version}!"
   },
   "dependencies": {
-    "pkgcfg": "^0.6.0"
+    "pkgcfg": "^0.7.0"
   }
 }
 ```
@@ -413,7 +418,7 @@ script and in that other script, use `pkgcfg` tags:
     "smart-start": "echo Yippee! We can use pkgcfg tags in {pkg name}!"
   },
   "dependencies": {
-    "pkgcfg": "^0.6.0"
+    "pkgcfg": "^0.7.0"
   }
 }
 ```

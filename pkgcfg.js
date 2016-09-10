@@ -1,16 +1,17 @@
-﻿var appRoot = require('app-root-path')
+var log; try {log=require('picolog')} catch(e){}
 var fs = require('fs')
+var path = require('path')
 var objectPath = require("object-path")
-var log; try {require.resolve('picolog'); log=require('picolog');} catch(e){}
 var global = typeof window == 'object' ? window : (typeof global == 'object' ? global : this)
-var cfg = JSON.parse(fs.readFileSync(appRoot + '/package.json'))
+var globalCfg; try{globalCfg = require('../../package.json')}catch(e){} try{globalCfg = globalCfg || (typeof process != 'undefined' && JSON.parse(fs.readFileSync(path.resolve(process.cwd(), 'package.json'))))}catch(e){}
 
-function pkgcfg(pkg) {
+function pkgcfg(pkg, cfg) {
+	cfg = cfg || globalCfg || {}
 	pkg = (typeof pkg == 'string' && JSON.parse(fs.readFileSync(pkg))) || pkg || cfg
 	var tags = Object.keys(registeredTransforms)
 	addTags(tags, availableTags(cfg))
 	addTags(tags, pkg !== cfg && availableTags(pkg) || [])
-	return process(pkg, pkg, tags)
+	return processTags(pkg, pkg, tags)
 }
 
 pkgcfg.QuietError = function(msg) {
@@ -42,7 +43,7 @@ module.exports = pkgcfg
 
 // IMPLEMENTATION //
 
-function process(pkg, node, tags) {
+function processTags(pkg, node, tags) {
 	// array
 	if (node instanceof Array) {return processArray(pkg, node, tags)}
 	// non-null object
@@ -56,7 +57,7 @@ function process(pkg, node, tags) {
 function processArray(pkg, node, tags) {
 	var result = []
 	for (var i=0; i<node.length; i++) {
-		result.push(process(pkg, node[i], tags))
+		result.push(processTags(pkg, node[i], tags))
 	}
 	return result
 }
@@ -65,7 +66,7 @@ function processObject(pkg, node, tags) {
 	var result = {}
 	var keys = Object.keys(node)
 	for (var i=0; i<keys.length; i++) {
-		result[keys[i]] = process(pkg, node[keys[i]], tags)
+		result[keys[i]] = processTags(pkg, node[keys[i]], tags)
 	}
 	return result
 }
@@ -82,7 +83,7 @@ function processString(pkg, node, tags) {
 			var transformed = transform(pkg, node, next.tag, payload)
 			var isStr = typeof transformed == 'string'
 			if (!isStr) {complex = true}
-			if (!isStr || transformed !== node) {transformed = process(pkg, transformed, tags)}
+			if (!isStr || transformed !== node) {transformed = processTags(pkg, transformed, tags)}
 			result.push(transformed)
 			input = remaining.substring(body.end + 1)
 		}
