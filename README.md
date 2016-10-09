@@ -49,7 +49,7 @@ console.info(pkg.map); // 'dist/my-project.min.js.map'
 Use [pkg](#pkg-ref) from the [built-in tags](#built-in-tags), `npm install`
 one or more of the [external tags](#external-tags), or
 [roll your own tags](#roll-your-own). You can even
-[use pkgcfg tags in NPM run scripts](#using-pkgcfg-tags-in-NPM-run-scripts)!
+[use pkgcfg tags in NPM run scripts](#using-pkgcfg-tags-in-npm-run-scripts)!
 
 > Remember that the standard NPM tooling does not understand `pkgcfg` tags, so you can't use them in the `name`, `version`, `dependencies` etc fields.
 
