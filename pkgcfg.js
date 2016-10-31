@@ -1,12 +1,12 @@
-var log; try {log=require('picolog')} catch(e){}
+var log; try {log=require('ulog')('pkgcfg')} catch(e){log = console}
 var fs = require('fs')
 var path = require('path')
 var objectPath = require("object-path")
-var global = typeof window == 'object' ? window : (typeof global == 'object' ? global : this)
-var globalCfg; try{globalCfg = require('../../package.json')}catch(e){} try{globalCfg = globalCfg || (typeof process != 'undefined' && JSON.parse(fs.readFileSync(path.resolve(process.cwd(), 'package.json'))))}catch(e){}
+var root = typeof window == 'object' ? window : (typeof global == 'object' ? global : this)
+var rootCfg; try{rootCfg = require('../../package.json')}catch(e){} try{rootCfg = rootCfg || (typeof process != 'undefined' && JSON.parse(fs.readFileSync(path.resolve(process.cwd(), 'package.json'))))}catch(e){}
 
 function pkgcfg(pkg, cfg) {
-	cfg = cfg || globalCfg || {}
+	cfg = cfg || rootCfg || {}
 	pkg = (typeof pkg == 'string' && JSON.parse(fs.readFileSync(pkg))) || pkg || cfg
 	var tags = Object.keys(registeredTransforms)
 	addTags(tags, availableTags(cfg))
@@ -132,7 +132,7 @@ function addTags(tags, add) {
 }
 
 function loadTag(pkg, tag) {
-	var name = (pkg.pkgcfg && pkg.pkgcfg.tags && pkg.pkgcfg.tags[tag]) || (globalCfg && globalCfg.pkgcfg && globalCfg.pkgcfg.tags && globalCfg.pkgcfg.tags[tag]) || ('pkg' + tag)
+	var name = (pkg.pkgcfg && pkg.pkgcfg.tags && pkg.pkgcfg.tags[tag]) || (rootCfg && rootCfg.pkgcfg && rootCfg.pkgcfg.tags && rootCfg.pkgcfg.tags[tag]) || ('pkg' + tag)
 	try {
 		require(name)
 		if (! registeredTransforms[tag]) {
@@ -214,34 +214,34 @@ function transform(pkg, node, tag, arg) {
 				args.push(arg)
 			}
 		}
-		var result = registeredTransforms[tag].apply(global, args)
-		log && log.log('tag: %s(%s) => ', tag, args, result)
+		var result = registeredTransforms[tag].apply(root, args)
+		log.log('tag: %s(%s) => ', tag, args, result)
 		return result
 	}
 	catch(error) {
-		var err = error instanceof pkgcfg.QuietError
-			? log && log.debug || function(){}
-			: log && log.error || (typeof console == 'object') && console.error || function(){}
+		var err = error instanceof pkgcfg.QuietError 
+			? log.log
+			: log.error
 		err('Error applying tag {%s (%s)}: ', tag, args, error)
 		return node
 	}
 }
 
 function register(tag, func) {
-	log && log.assert(tag, 'Parameter `tag` is required: ', tag)
-	log && log.assert(typeof tag == 'string', 'Parameter `tag` must be a string: ', tag)
-	log && log.assert(!registeredTransforms[tag], 'Tag ' + tag + ' is already registered: ', registeredTransforms[tag])
-	log && log.assert(['toString', 'valueOf', 'toJSON'].indexOf(tag) === -1, '`%s` is a reserved word and may not be used as a tag.', tag)
+	log.assert(tag, 'Parameter `tag` is required: ', tag)
+	log.assert(typeof tag == 'string', 'Parameter `tag` must be a string: ', tag)
+	log.assert(!registeredTransforms[tag], 'Tag ' + tag + ' is already registered: ', registeredTransforms[tag])
+	log.assert(['toString', 'valueOf', 'toJSON'].indexOf(tag) === -1, '`%s` is a reserved word and may not be used as a tag.', tag)
 	var usedReservedChars = ['{','}','[',']','(',')'].filter(function(x){return tag.indexOf(x) !== -1})
-	log && log.assert(usedReservedChars.length === 0, 'Parameter `tag` contains reserved character(s): ', usedReservedChars)
-	log && log.assert(func, 'Parameter `func` is required: ', func)
-	log && log.assert(typeof func == 'function', 'Parameter `func` must be a function: ', func)
+	log.assert(usedReservedChars.length === 0, 'Parameter `tag` contains reserved character(s): ', usedReservedChars)
+	log.assert(func, 'Parameter `func` is required: ', func)
+	log.assert(typeof func == 'function', 'Parameter `func` must be a function: ', func)
 	registeredTransforms[tag] = func
 }
 
 function unregister(tag, func) {
-	log && log.assert(registeredTransforms[tag] && registeredTransforms[tag] === func, 'Unable to unregister the tag. The supplied function is not currently registered with the supplied tag %s.', tag)
-	log && log.assert(['toString', 'valueOf', 'toJSON'].indexOf(tag) === -1, '`%s` is a reserved word and may not be used as a tag.', tag)
+	log.assert(registeredTransforms[tag] && registeredTransforms[tag] === func, 'Unable to unregister the tag. The supplied function is not currently registered with the supplied tag %s.', tag)
+	log.assert(['toString', 'valueOf', 'toJSON'].indexOf(tag) === -1, '`%s` is a reserved word and may not be used as a tag.', tag)
 	delete registeredTransforms[tag]
 }
 
@@ -295,6 +295,6 @@ function convertQuotes(payload) {
 	if (esc) {
 		result += '"'
 	}
-	log && log.debug('convertQuotes(' + payload + ') ==> ', result)
+	log.log('convertQuotes(' + payload + ') ==> ', result)
 	return result
 }

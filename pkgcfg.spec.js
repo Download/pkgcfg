@@ -1,4 +1,4 @@
-﻿var log = require('picolog');
+﻿var log = require('ulog')('pkgcfg:spec');
 var chalk = require('chalk');
 var expect = require('chai').expect;
 

@@ -1,7 +1,7 @@
 {
   "name": "pkgcfg",
-  "version": "0.7.2",
-  "description": "Move those pesky configuration files to your package.json",
+  "version": "0.8.0",
+  "description": "One config to rule them all",
   "main": "pkgcfg.js",
   "bin": {
     "run": "./bin/run.js"
@@ -73,8 +73,8 @@
   "devDependencies": {
     "chai": "^3.4.1",
     "chalk": "^1.1.1",
-    "mocha": "^3.0.2",
-    "picolog": "^1.0.0"
+    "mocha": "^3.1.2",
+    "ulog": "^1.0.0"
   },
   "dependencies": {
     "object-path": "^0.11.2"
