@@ -3,7 +3,8 @@ var fs = require('fs')
 var path = require('path')
 var objectPath = require("object-path")
 var root = typeof window == 'object' ? window : (typeof global == 'object' ? global : this)
-var rootCfg; try{rootCfg = require('../../package.json')}catch(e){} try{rootCfg = rootCfg || (typeof process != 'undefined' && JSON.parse(fs.readFileSync(path.resolve(process.cwd(), 'package.json'))))}catch(e){}
+var rootCfg; try{rootCfg = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), 'package.json')))} catch(e) {}
+ 
 
 function pkgcfg(pkg, cfg) {
 	cfg = cfg || rootCfg || {}
