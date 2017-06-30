@@ -72,7 +72,7 @@
   "homepage": "https://github.com/download/pkgcfg",
   "devDependencies": {
     "chai": "^3.4.1",
-    "chalk": "^1.1.1",
+    "chalk": "^2.0.0",
     "mocha": "^3.1.2",
     "ulog": "^1.0.0"
   },
