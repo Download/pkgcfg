@@ -211,7 +211,7 @@ This will create an infinite loop and likely crash your program. Don't do this!
 
 By convention, the name of the external package needed to use the tag has the
 form `pkg<tag>`, where `<tag>` is the name of the tag. For example, the `env{}`
-tag is contained in the package `pkgenv`, the `eval{}` tag in package `pkgeval` etc.
+tag is contained in `pkgenv`, the `eval{}` tag in `pkgeval` etc.
 
 To use tags from external packages:
 
@@ -470,6 +470,92 @@ script and in that other script, use `pkgcfg` tags:
 ## Example project
 
 If you want a simple example project demonstrating how `pkgcfg` works, check out [pkgcfg-example](https://github.com/download/pkgcfg-example).
+
+
+## Contributing
+To hack on this code, fork this repo to your own account and clone the fork to your local machine.
+
+### Install
+Go to the root folder of the cloned project and run `npm install` to install the dependencies:
+
+```sh
+$ npm install
+added 39 packages from 306 contributors in 4.156s
+```
+
+### Run tests
+Then, run the Mocha tests:
+
+```sh
+$ npm test
+
+> pkgcfg@0.9.0 test C:\ws\pkgcfg
+> mocha pkgcfg.spec.js
+
+
+  pkgcfg
+    √ is a function
+    √ returns an object representation of package.json
+$test{} => calls $test(root, parents, node)
+    √ calls transform functions associated to tags that it encounters during parsing
+    ...
+
+  39 passing (95ms)
+```
+
+The tests should all pass. To re-run the tests whenever you make a change, use 
+
+```sh
+$ npm run dev
+```
+
+This will run Mocha with the `--watch` flag.
+
+### Write code and create a PR
+You can now work on the code. Don't forget to create a branch for your new feature. Add some tests and make sure they pass. Then, commit and push your changes and create a PR. 
+
+## Logging
+This project supports logging with [ulog](https://github.com/download/ulog). To enable debug 
+logging for this package, set the `DEBUG` environment variable to include `pkgcfg`: 
+
+*Windows*
+```sh
+C:\>set DEBUG=pkgcfg
+```
+
+*Unix/Mac*
+```sh
+$ DEBUG=pkgcfg
+```
+
+Now, `pkgcfg` will log debug information as it runs. For example here is some output produced
+when running the tests with this environment variable set:
+
+```sh
+tag: ${[object Object],[object Object],[object Object],${name},name} =>  pkgcfg
+tag: ${[object Object],[object Object],[object Object],${repository.type},repository.type} =>  git
+tag: ${[object Object],[object Object],[object Object],${repository},repository} =>  { type: 'git', url: 'https://github.com/download/pkgcfg.git' }
+tag: ${[object Object],[object Object],[object Object],${test.data},test.data} =>  { array: [ 'one config to rule them all', 'with', 'pkgcfg' ],
+  'with-dash': 'ok',
+  'with:colon': 'ok',
+  'with.dot': 'ok',
+  'with\'quote': 'ok' }
+tag: ${[object Object],[object Object],[object Object],${keywords},keywords} =>  [ 'package.json', 'configuration', 'pkgcfg', 'pkgenv', 'pkgeval' ]
+tag: ${[object Object],[object Object],[object Object],${test.data.array},test.data.array} =>  [ 'one config to rule them all', 'with', 'pkgcfg' ]
+Error applying tag ${[object Object],[object Object],[object Object],${unresolved.transforms.return.unmodified.text},unresolved.transforms.return.unmodified.text}:  { Error
+    at Object.$ (C:\ws\pkgcfg\pkgcfg.js:47:35)
+    at transform (C:\ws\pkgcfg\pkgcfg.js:225:42)
+    ...
+    at bootstrap_node.js:502:3
+  message: '${unresolved.transforms.return.unmodified.text} cannot be resolved.',
+  name: 'QuietError' }
+tag: ${[object Object],[object Object],[object Object],${test.data.array.length},test.data.array.length} =>  3
+tag: ${[object Object],[object Object],[object Object],${test.data.array.2},test.data.array.2} =>  pkgcfg
+tag: ${[object Object],[object Object],[object Object],${test.data.with-dash},test.data.with-dash} =>  ok
+tag: ${[object Object],[object Object],[object Object],${test.data.with:colon},test.data.with:colon} =>  ok
+convertQuotes(['test','data','with.dot']) ==>  ["test","data","with.dot"]
+...
+```
 
 
 ## Issues
