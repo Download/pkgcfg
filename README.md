@@ -1,4 +1,4 @@
-# pkgcfg <sup><sub>0.9.0</sub></sup>
+# pkgcfg <sup><sub>0.9.1</sub></sup>
 ## One configuration to rule them all
 
 [![npm](https://img.shields.io/npm/v/pkgcfg.svg)](https://npmjs.com/package/pkgcfg)
@@ -34,7 +34,7 @@ Add `pkgcfg` `tags` to your `package.json`:
   "min": "dist/${name}.min.js",
   "map": "dist/${name}.min.js.map",
   "dependencies": {
-    "pkgcfg": "^0.9.0"
+    "pkgcfg": "^0.9.1"
   }
 }
 ```
@@ -419,7 +419,7 @@ use them in the `scripts` section, via the `run` command that comes with `pkgcfg
     "pkgcfg-echo": "echo Hello, ${name} ${version}!"
   },
   "dependencies": {
-    "pkgcfg": "^0.9.0"
+    "pkgcfg": "^0.9.1"
   }
 }
 ```
@@ -462,7 +462,7 @@ script and in that other script, use `pkgcfg` tags:
     "smart-start": "echo Yippee! We can use pkgcfg tags in ${name}!"
   },
   "dependencies": {
-    "pkgcfg": "^0.9.0"
+    "pkgcfg": "^0.9.1"
   }
 }
 ```
@@ -489,7 +489,7 @@ Then, run the Mocha tests:
 ```sh
 $ npm test
 
-> pkgcfg@0.9.0 test C:\ws\pkgcfg
+> pkgcfg@0.9.1 test C:\ws\pkgcfg
 > mocha pkgcfg.spec.js
 
 

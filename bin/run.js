@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-var log; try {log = require('ulog')('pkgcfg:run')} catch(e){log = console}
+var log = require('ulog')('pkgcfg:run')
 var spawn = require('child_process').spawn
 var pkg = require('pkgcfg')()
 

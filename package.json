@@ -1,6 +1,6 @@
 {
   "name": "pkgcfg",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "One config to rule them all",
   "main": "pkgcfg.js",
   "bin": {
@@ -75,10 +75,10 @@
   "devDependencies": {
     "chai": "^4.1.2",
     "chalk": "^2.3.2",
-    "mocha": "^5.0.4",
-    "ulog": "^1.1.0"
+    "mocha": "^5.0.4"
   },
   "dependencies": {
-    "object-path": "^0.11.4"
+    "object-path": "^0.11.4",
+    "ulog": "^1.1.0"
   }
 }
