@@ -1,4 +1,4 @@
-# pkgcfg <sup><sub>0.8.1</sub></sup>
+# pkgcfg <sup><sub>0.9.0</sub></sup>
 ## One configuration to rule them all
 
 [![npm](https://img.shields.io/npm/v/pkgcfg.svg)](https://npmjs.com/package/pkgcfg)
@@ -9,7 +9,7 @@
 
 <sup><sub><sup><sub>.</sub></sup></sub></sup>
 
-![logo](https://rawgit.com/Download/pkgcfg/0.3.5/logo.png)
+![logo](https://rawgit.com/download/pkgcfg/0.3.5/logo.png)
 
 <sup><sub><sup><sub>.</sub></sup></sub></sup>
 
@@ -25,28 +25,36 @@ npm install --save pkgcfg
 
 Add `pkgcfg` `tags` to your `package.json`:
 
-_package.json:_
+*package.json:*
 ```json
 {
   "name": "my-project",
   "version": "1.0.0",
   "main": "src/my-project.js",
-  "min": "dist/{pkg name}.min.js",
-  "map": "dist/{pkg name}.min.js.map",
+  "min": "dist/${name}.min.js",
+  "map": "dist/${name}.min.js.map",
   "dependencies": {
-    "pkgcfg": "^0.8.1"
+    "pkgcfg": "^0.9.0"
   }
 }
 ```
 
-Then, read your `package.json` with `pkgcfg`:
+Then, read your *package.json* with `pkgcfg`:
 
 ```js
-var pkg = require('pkgcfg')(); // <-- note the extra pair of braces
-console.info(pkg.min); // 'dist/my-project.min.js'
-console.info(pkg.map); // 'dist/my-project.min.js.map'
+var pkg = require('pkgcfg')()  // <-- note the extra pair of braces
+console.info(pkg.min)          // 'dist/my-project.min.js'
+console.info(pkg.map)          // 'dist/my-project.min.js.map'
 ```
-Use [pkg](#pkg-ref) from the [built-in tags](#built-in-tags), `npm install`
+
+By default, `pkgcfg` will read in *package.json*, but you can read
+any other JSON file by passing the path to the file as an argument:
+
+```js
+var myJSON = require('pkgcfg')('./path/to/my.json')
+```
+
+Use [$](#ref) from the [built-in tags](#built-in-tags), `npm install`
 one or more of the [external tags](#external-tags), or
 [roll your own tags](#roll-your-own). You can even
 [use pkgcfg tags in NPM run scripts](#using-pkgcfg-tags-in-npm-run-scripts)!
@@ -56,66 +64,72 @@ one or more of the [external tags](#external-tags), or
 
 ## What is it?
 
-Inspired by an [article](http://blog.keithcirkel.co.uk/why-we-should-stop-using-grunt/) from Keith Cirkel
-promoting the use of `npm` for build scripting and the use of `package.json` for configuration, I tried to
-follow his advice. But I quickly learned the downside of JSON as a format, because it is completely static
-and lacks even the simplest dynamic behavior, such as referencing other nodes in the tree,
-environment variables, simple conditionals etc. `pkgcfg` is a pluggable system to allow simple dynamic
-behavior to be specified in the JSON document, which is then executed by `pkgcfg` when it loads the JSON.
+Inspired by an [article](http://blog.keithcirkel.co.uk/why-we-should-stop-using-grunt/) 
+from Keith Cirkel promoting the use of `npm` for build scripting and the use of `package.json` 
+for configuration, I tried to follow his advice. But I quickly learned the downside of JSON 
+as a format, because it is completely static and lacks even the simplest dynamic behavior, 
+such as referencing other nodes in the tree, environment variables, simple conditionals etc. 
+
+`pkgcfg` is a pluggable system to allow simple dynamic behavior to be specified in a JSON 
+document, which is then executed by `pkgcfg` when it loads the JSON.
 
 
 ## How does it work?
 
-In the example above, `{pkg name}` tells `pkgcfg` that this snippet should be *transformed* using
-the tag function `pkg`, which is built-in and implements a simple reference mechanism based
+In the example above, `${name}` tells `pkgcfg` that this snippet should be *transformed* using
+the tag function `$`, which is built-in and implements a simple reference mechanism based
 on [object-path](https://npmjs.org/package/object-path).
 
 The syntax should feel pretty natural to anyone that has worked with templating libraries before.
 This is the basic form:
 
 ```
-      {tag text-content}
-      ^ ^       ^      ^
-     /  |       |       \
-  open tag  argument    close
+      tag{text-content}
+       ^ ^     ^      ^
+      /  |     |       \
+   tag  open argument    close
 ```
 
-An unbalanced close marker after the tag will close the tag. If your text contains close markers, you can
-use quotes to prevent them from being interpreted:
+An unbalanced close marker after the tag will close the tag. If your text contains close markers, 
+you can use quotes to prevent them from being interpreted:
 
 ```
-      {tag 'text-content'}
-           ^            ^
-            \          /
+       tag{'text with } symbol'}
+           ^                  ^
+            \                /
   prevent interpretation of open/close symbols
 ```
 
-If your text contains quotes, then you can escape these inside quoted text by replacing them with
-2 consecutive quotes:
+If your text contains quotes, then you can escape these inside quoted text by replacing them 
+with 2 consecutive quotes:
 
 ```
-  {tag 'text with '' in content'}
-                   ^
-                   |
-            escaped quote
+  tag{'text with '' in content'}
+                  ^
+                  |
+             escaped quote
 ```
 
 will result in the string `text with ' in content` being passed to `tag`.
 
-In all cases, any tags contained inside the text-content will also be processed. This will happen before
-the result is passed to the tag function associated with `tag`. E.g:
+In all cases, any tags contained inside the text-content will also be processed. 
+This will happen before the result is passed to the tag function associated with `tag`. 
+
+E.g:
 
 ```
-{tag Hello, {user}!}
+tag{Hello, user{name}!}
 ```
 
-`{user}` will be transformed first and if it yields `Alice`, then `Hello, Alice!` will be passed on to `tag`.
+`user{name}` will be transformed first and if it yields `Alice`, then `Hello, Alice!` 
+will be passed on to `tag`.
 
-Normally, the raw text inside the tag will be passed to the tag function as a string, but by adding a modifier,
-you can let pkgcfg use `JSON.parse` to turn the text into an object or array:
+Normally, the raw text inside the tag will be passed to the tag function as a string, 
+but by adding a modifier, you can let pkgcfg use `JSON.parse` to turn the text into an 
+object or array:
 
 ```
-{tag ['some', 'text', 'with '' in it']}
+tag{['some', 'text', 'with '' in it']}
 ```
 
 In this case, `pkgcfg` will replace all single quotes (except escaped ones) into double quotes:
@@ -129,13 +143,13 @@ and then call `JSON.parse` on it to get you a real array.
 The same thing can be done with objects:
 
 ```
-{tag {'some': 'object', 'with':'a '' in it'}}
+tag{{'some': 'object', 'with':'a '' in it'}}
 ```
 
 Finally, the list modifiers will let `pkgcfg` pass multiple arguments to the tag function:
 
 ```
-{tag ('wow', 'multiple', 'arguments')}
+tag{('wow', 'multiple', 'arguments')}
 ```
 
 `tag` will receive it's payload in three arguments instead of the usual one.
@@ -146,24 +160,25 @@ Finally, the list modifiers will let `pkgcfg` pass multiple arguments to the tag
 The tags listed below are part of `pkgcfg` itself and require no extra dependencies.
 
 
-### {pkg ref}
+### ${ref}
 Yields the value of the referenced JSON node.
 
 #### ref
 Required, String.
-A valid [object-path](https://www.npmjs.com/package/object-path) expression to another node in the JSON.
+A valid [object-path](https://www.npmjs.com/package/object-path) expression to another 
+node in the JSON.
 
 #### examples
 ```json
 {
   "name": "pkgcfg-example",
   "version": "1.0.0",
-  "test": "Project {pkg name} {pkg version} is using pkgcfg!",
+  "test": "Project ${name} ${version} is using pkgcfg!",
 }
 ```
-In this example, `name` and `version` are two very simple object-path expressions that will
-yield `'pkgcfg-example'` and `'1.0.0'` respectively. But `object-path` allows much more
-complex expressions. E.g.:
+In this example, `name` and `version` are two very simple object-path expressions that 
+will yield `'pkgcfg-example'` and `'1.0.0'` respectively. But `object-path` allows much 
+more complex expressions. E.g.:
 
 ```json
 {
@@ -175,16 +190,16 @@ complex expressions. E.g.:
       ]
     }
   },
-  "test": "{pkg nested.object.array.1}"
+  "test": "${nested.object.array.1}"
 }
 ```
-In this example, `{pkg nested.object.array.1}` will yield `'element-1'`. For more details see the [object-path documentation](https://github.com/mariocasciaro/object-path).
+In this example, `${nested.object.array.1}` will yield `'element-1'`. For more details see the [object-path documentation](https://github.com/mariocasciaro/object-path).
 
 **NOTE:** Loops are not supported:
 ```json
 {
-  "start": "{pkg end}",
-  "end": "{pkg start}"
+  "start": "${end}",
+  "end": "${start}"
 }
 ```
 This will create an infinite loop and likely crash your program. Don't do this!
@@ -195,8 +210,8 @@ This will create an infinite loop and likely crash your program. Don't do this!
 `pkgcfg` allows you to use tags coming from external packages.
 
 By convention, the name of the external package needed to use the tag has the
-form `pkg{tag}`, where `{tag}` is the name of the tag. For example, the `{env}`
-tag is contained in the package `pkgenv`, the `{eval}` tag in package `pkgeval` etc.
+form `pkg<tag>`, where `<tag>` is the name of the tag. For example, the `env{}`
+tag is contained in the package `pkgenv`, the `eval{}` tag in package `pkgeval` etc.
 
 To use tags from external packages:
 
@@ -207,30 +222,32 @@ E.G.: `npm install --save pkgenv`
 Pkgcfg will only transform tags it knows about. There are three ways to let
 it know about tags coming from external packages:
 
-* have it *discover* tags based on the dependencies in `package.json`
-* *register* the tags in `package.json`
+* have it *discover* tags based on the dependencies in *package.json*
+* *register* the tags in *package.json*
+* *register* the tags in the config being transformed
 * `require` the package before using `pkgcfg`
 <sup><sub><sup><sub>.</sub></sup></sub></sup>
 
 #### have `pkgcfg` discover tags based on dependencies
 `pkgcfg` will look at the keys `dependencies` and `devDependencies` in your
-`package.json` and if they contain any packages whose name starts with `'pkg'`,
+*package.json* and if they contain any packages whose name starts with `'pkg'`,
 it will register the tag based on the rest of the name. E.g. for a dependency
 named `'pkgenv'`, it will discover the tag `'env'`. No need to explicitly
 `require` the package containing the tag before using `pkgcfg`:
 
 ```js
-var pkg = require('pkgcfg')(); // requires `pkgenv` automatically when needed
+var pkg = require('pkgcfg')() // requires `pkgenv` automatically when needed
 ```
 
 > Auto-discovery should work for all external tags listed on this page.
 
-#### register the tags in `package.json`
+#### register the tags in *package.json*
 For tags coming from packages that don't follow the naming convention, you
 can explicitly register the tags you are using by adding an entry `pkgcfg`
-to your `package.json` with a `tags` attribute, which should be an object with
+to your *package.json* with a `"tags"` attribute, which should be an object with
 the tag name as key and the name of the package this tag comes from as the value:
 
+*package.json*
 ```json
 {
   "pkgcfg": {
@@ -240,11 +257,35 @@ the tag name as key and the name of the package this tag comes from as the value
   }
 }
 ```
-`pkgcfg` will automatically `require('pkgenv')` when it encounters the `{env}` tag.
+`pkgcfg` will automatically `require('pkgenv')` when it encounters the `env{}` tag.
 No need to explicitly require it yourself:
 
 ```js
-var pkg = require('pkgcfg')(); // requires `pkgenv` automatically when needed
+var pkg = require('pkgcfg')() // requires `pkgenv` automatically when needed
+```
+
+#### register the tags in the config being transformed
+You can also add a key named `pkgcfg` to the JSON being transformed. 
+The format is exactly the same as for *package.json*:
+
+*my-json.json*
+```json
+{
+  "pkgcfg": {
+    "tags": {
+      "env": "pkgenv"
+    }
+  }
+}
+```
+
+Any tags registered in *package.json* will also be available.
+
+`pkgcfg` will automatically `require('pkgenv')` when it encounters the `env{}` tag.
+No need to explicitly require it yourself:
+
+```js
+var pkg = require('pkgcfg')('my-json.json') // requires `pkgenv` automatically when needed
 ```
 
 #### require an external tag
@@ -254,18 +295,18 @@ beforehand which tags are used.
 Just call `require` before you call `pkgcfg`:
 
 ```js
-require('pkgenv'); // <-- make sure `{env}` tag is available
-var pkg = require('pkgcfg')();
+require('pkgenv') // <-- make sure `env{}` tag is available
+var pkg = require('pkgcfg')()
 ```
 
 
 ## External tags
 
-### {[env](https://www.npmjs.com/package/pkgenv) (name, [defaultValue])}
+### [env](https://www.npmjs.com/package/pkgenv){(name, [defaultValue])}
 Reference environment variables.
 * `npm install --save` [pkgenv](https://www.npmjs.com/package/pkgenv)
 
-### {[eval](https://www.npmjs.com/package/pkgeval) expr}
+### [eval](https://www.npmjs.com/package/pkgeval){expr}
 Evaluate Javascript expressions.
 * `npm install --save` [pkgeval](https://www.npmjs.com/package/pkgeval)
 
@@ -285,14 +326,17 @@ of some environment variable.
 First, define a function that will contain the logic for your tag:
 
 ```js
-function pkgenv(pkg, node, name, defaultValue) {
+function pkgenv(root, parents, node, name, defaultValue) {
 
 }
 ```
 
-The function should accept at least 2 arguments, `pkg` and `node`, which will
-be passed to it by `pkgcfg` and which will contain the JSON object tree and the
-current node in that object tree.
+The function should accept at least 3 arguments, which will be passed to it by `pkgcfg` 
+when invoking the tag:
+
+* `root`: The root node of the config being processed
+* `parents`: An array containing all parents of the current node, closes parent last.
+* `node`: The node currently being processed.
 
 If the tag needs to accept arguments, add these as extra arguments to the
 function as well. In this case we add 2 extra arguments, `name` and `defaultValue`,
@@ -303,10 +347,10 @@ Now implement the business logic of your tag. In this case it's some code to
 access `process.env` to read the environment. Here is the full function:
 
 ```js
-function pkgenv(pkg, node, name, defaultValue) {
-  if (!name) {name = 'NODE_ENV'}
-  if (!defaultValue) {defaultValue = ''}
-	return process.env[name] || defaultValue;
+function pkgenv(root, parents, node, name, defaultValue) {
+  if (!name) name = 'NODE_ENV'
+  if (!defaultValue) defaultValue = ''
+	return process.env[name] || defaultValue
 }
 ```
 
@@ -315,7 +359,7 @@ function pkgenv(pkg, node, name, defaultValue) {
 After we have created a tag function, we need to register it with `pkgcfg`:
 
 ```js
-pkgcfg.registry.register('env', pkgenv);
+pkgcfg.registry.register('env', pkgenv)
 ```
 
 Pkgcfg assumes that tags register themselves upon first `require` and
@@ -323,22 +367,22 @@ are never unregistered. However, in some scenario's (e.g. testing) it may be
 desirable to call `unregister` to unregister the tag again:
 
 ```js
-pkgcfg.registry.unregister('env', pkgenv);
+pkgcfg.registry.unregister('env', pkgenv)
 ```
 
 Using the knowledge from above, let's write the full `pkgenv` module:
 
 ```js
-var pkgcfg = require('pkgcfg');
+var pkgcfg = require('pkgcfg')
 
 function pkgenv(pkg, node, name, defaultValue) {
   if (!name) {name = 'NODE_ENV'}
   if (!defaultValue) {defaultValue = ''}
-	return process.env[name] || defaultValue;
+	return process.env[name] || defaultValue
 }
 
-pkgcfg.registry.register('env', pkgenv);
-module.exports = pkgenv;
+pkgcfg.registry.register('env', pkgenv)
+module.exports = pkgenv
 ```
 
 ### (Optional) Publish your tag to NPM
@@ -372,10 +416,10 @@ use them in the `scripts` section, via the `run` command that comes with `pkgcfg
   "main": "src/my-project.js",
   "scripts": {
     "echo": "run pkgcfg-echo",
-    "pkgcfg-echo": "echo Hello, {pkg name} {pkg version}!"
+    "pkgcfg-echo": "echo Hello, ${name} ${version}!"
   },
   "dependencies": {
-    "pkgcfg": "^0.8.1"
+    "pkgcfg": "^0.9.0"
   }
 }
 ```
@@ -415,10 +459,10 @@ script and in that other script, use `pkgcfg` tags:
   "version": "1.0.0",
   "scripts": {
     "start": "run smart-start",
-    "smart-start": "echo Yippee! We can use pkgcfg tags in {pkg name}!"
+    "smart-start": "echo Yippee! We can use pkgcfg tags in ${name}!"
   },
   "dependencies": {
-    "pkgcfg": "^0.8.1"
+    "pkgcfg": "^0.9.0"
   }
 }
 ```
@@ -436,7 +480,7 @@ to let me know of any problems you find, or questions you may have.
 
 ## Copyright
 
-Copyright 2016 by [Stijn de Witt](http://StijnDeWitt.com). Some rights reserved.
+Copyright 2018 by [Stijn de Witt](http://StijnDeWitt.com). Some rights reserved.
 
 
 ## License

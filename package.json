@@ -1,6 +1,6 @@
 {
   "name": "pkgcfg",
-  "version": "0.8.1",
+  "version": "0.9.0",
   "description": "One config to rule them all",
   "main": "pkgcfg.js",
   "bin": {
@@ -12,7 +12,7 @@
   },
   "scripts": {
     "test": "mocha pkgcfg.spec.js",
-    "test-watch": "mocha --watch pkgcfg.spec.js"
+    "dev": "mocha --watch pkgcfg.spec.js"
   },
   "test": {
     "data": {
@@ -26,36 +26,38 @@
       "with.dot": "ok",
       "with'quote": "ok"
     },
-    "calls-transform": "{test}",
-    "calls-transform-with-dash": "{test-with-dash}",
-    "calls-transform-with-colon": "{test:with:colon}",
-    "calls-transform-with-dot": "{test.with.dot}",
-    "calls-transform-with-quote": "{test'with'quote}",
-    "yields-text-unmodified-for-unmatched-tags": "{test}",
-    "yields-undefined-for-matched-tags-returning-undefined": "{test}",
-    "yields-null-for-matched-tags-returning-null": "{test}",
-    "yields-empty-string-for-matched-tags-returning-empty-string": "{test}",
-    "calls-transform-with-arg": "{test-with-arg some arg}",
-    "calls-transform-with-arg-object": "{test-with-arg-object {'some':'object'}}",
-    "calls-transform-with-arg-array": "{test-with-arg-array ['some','array']}",
-    "calls-transform-with-arg-list": "{test-with-arg-list ('some','list')}",
-    "calls-transform-with-unbalanced-close": "{test-with-unbalanced-close 'unbalanced } close'}",
-    "primitive": "{pkg name}",
-    "nested-primitive": "{pkg repository.type}",
-    "object": "{pkg repository}",
-    "nested-object": "{pkg test.data}",
-    "array": "{pkg keywords}",
-    "nested-array": "{pkg test.data.array}",
-    "unresolved": "{pkg unresolved.transforms.return.unmodified.text}",
-    "array-length": "{pkg test.data.array.length}",
-    "nth-item": "{pkg test.data.array.2}",
-    "with-dash": "{pkg test.data.with-dash}",
-    "with-colon": "{pkg test.data.with:colon}",
-    "with-dot": "{pkg ['test','data','with.dot']}",
-    "with-quote": "{pkg ['test','data','with''quote']}",
-    "indirect": "{pkg test.primitive}",
-    "register": "{hello}",
-    "tag-within-tag": "{echo {pkg name}}"
+    "calls-transform": "$test{}",
+    "calls-transform-with-dash": "$test-with-dash{}",
+    "calls-transform-with-colon": "$test:with:colon{}",
+    "calls-transform-with-dot": "$test.with.dot{}",
+    "calls-transform-with-quote": "$test'with'quote{}",
+    "yields-text-unmodified-for-unmatched-tags": "$test{}",
+    "yields-undefined-for-matched-tags-returning-undefined": "$test{}",
+    "yields-null-for-matched-tags-returning-null": "$test{}",
+    "yields-empty-string-for-matched-tags-returning-empty-string": "$test{}",
+    "calls-transform-with-arg": "$test-with-arg{some arg}",
+    "calls-transform-with-arg-object": "$test-with-arg-object{{'some':'object'}}",
+    "calls-transform-with-arg-array": "$test-with-arg-array{['some','array']}",
+    "calls-transform-with-arg-list": "$test-with-arg-list{('some','list')}",
+    "calls-transform-with-unbalanced-close": "$test-with-unbalanced-close{'unbalanced } close'}",
+    "primitive": "${name}",
+    "nested-primitive": "${repository.type}",
+    "object": "${repository}",
+    "nested-object": "${test.data}",
+    "array": "${keywords}",
+    "nested-array": "${test.data.array}",
+    "unresolved": "${unresolved.transforms.return.unmodified.text}",
+    "array-length": "${test.data.array.length}",
+    "nth-item": "${test.data.array.2}",
+    "with-dash": "${test.data.with-dash}",
+    "with-colon": "${test.data.with:colon}",
+    "with-dot": "${['test','data','with.dot']}",
+    "with-quote": "${['test','data','with''quote']}",
+    "indirect": "${test.primitive}",
+    "tag-within-tag": "$echo{${name}}",
+    "register": "$hello{John}",
+    "eval": "eval{3 + 4}",
+    "env": "env{('ENV_VAR_THAT_DOES_NOT_EXIST', 'defaultValue')}"
   },
   "keywords": [
     "package.json",
@@ -71,10 +73,10 @@
   },
   "homepage": "https://github.com/download/pkgcfg",
   "devDependencies": {
-    "chai": "^4.0.0",
+    "chai": "^4.1.2",
     "chalk": "^1.1.1",
     "mocha": "^3.1.2",
-    "ulog": "^1.0.0"
+    "ulog": "^1.1.0"
   },
   "dependencies": {
     "object-path": "^0.11.2"

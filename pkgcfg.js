@@ -1,18 +1,20 @@
-var log; try {log=require('ulog')('pkgcfg')} catch(e){log = console}
+var log = require('ulog')('pkgcfg')
 var fs = require('fs')
 var path = require('path')
 var objectPath = require("object-path")
 var root = typeof window == 'object' ? window : (typeof global == 'object' ? global : this)
 var rootCfg; try{rootCfg = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), 'package.json')))} catch(e) {}
- 
 
-function pkgcfg(pkg, cfg) {
+// expose
+module.exports = pkgcfg
+
+function pkgcfg(root, cfg) {
 	cfg = cfg || rootCfg || {}
-	pkg = (typeof pkg == 'string' && JSON.parse(fs.readFileSync(pkg))) || pkg || cfg
+	root = (typeof root == 'string' && JSON.parse(fs.readFileSync(root))) || root || cfg
 	var tags = Object.keys(registeredTransforms)
 	addTags(tags, availableTags(cfg))
-	addTags(tags, pkg !== cfg && availableTags(pkg) || [])
-	return processTags(pkg, pkg, tags)
+	addTags(tags, root !== cfg && availableTags(root) || [])
+	return processTags(root, [], root, tags)
 }
 
 pkgcfg.QuietError = function(msg) {
@@ -25,12 +27,6 @@ pkgcfg.QuietError = function(msg) {
 pkgcfg.QuietError.prototype = Object.create(Error.prototype)
 pkgcfg.QuietError.prototype.constructor = pkgcfg.QuietError
 
-function pkg(pkg, node, path) {
-	var result = objectPath.get(pkg, path)
-	if (result === undefined) {throw new pkgcfg.QuietError('{pkg ' + path + '} cannot be resolved.')}
-	return result
-}
-
 pkgcfg.registry = {
 	register: register,
 	unregister: unregister,
@@ -39,70 +35,81 @@ pkgcfg.registry = {
 }
 
 var registeredTransforms = {}
-pkgcfg.registry.register('pkg', pkg)
-module.exports = pkgcfg
+pkgcfg.registry.register('$', $)
+
 
 // IMPLEMENTATION //
 
-function processTags(pkg, node, tags) {
-	// array
-	if (node instanceof Array) {return processArray(pkg, node, tags)}
-	// non-null object
-	if (node && (typeof node == 'object')) {return processObject(pkg, node, tags)}
-	// primitives, null, undefined
-	if (typeof node !== 'string') {return node} // primitive, no need to clone
-	// strings (that might contain transform tags)
-	return processString(pkg, node, tags)
+// the only built-in tag
+function $(root, parents, node, ref) {
+	var ctx = ref && (ref.indexOf('.') === 0) ? node : root
+	var result = objectPath.get(ctx, ref)
+	if (result === undefined) {throw new pkgcfg.QuietError('${' + ref + '} cannot be resolved.')}
+	return result
 }
 
-function processArray(pkg, node, tags) {
+function processTags(root, parents, node, tags) {
+	// array
+	if (node instanceof Array) return processArray(root, parents, node, tags)
+	// non-null object
+	if (node && (typeof node == 'object')) return processObject(root, parents, node, tags)
+	// primitives, null, undefined
+	if (typeof node !== 'string') return node  // primitive, no need to clone
+	// strings (that might contain transform tags)
+	return processString(root, parents, node, tags)
+}
+
+function processArray(root, parents, node, tags) {
 	var result = []
+	parents = parents.concat(node)
 	for (var i=0; i<node.length; i++) {
-		result.push(processTags(pkg, node[i], tags))
+		result.push(processTags(root, parents, node[i], tags))
 	}
 	return result
 }
 
-function processObject(pkg, node, tags) {
+function processObject(root, parents, node, tags) {
 	var result = {}
+	parents = parents.concat(node)
 	var keys = Object.keys(node)
 	for (var i=0; i<keys.length; i++) {
-		result[keys[i]] = processTags(pkg, node[keys[i]], tags)
+		result[keys[i]] = processTags(root, parents, node[keys[i]], tags)
 	}
 	return result
 }
 
-function processString(pkg, node, tags) {
+function processString(root, parents, node, tags) {
 	var next, input = node, result = [], complex=false;
-	while ((next = nextTag(pkg, input, tags)) !== null) {
+	while ((next = nextTag(input, tags)) !== null) {
+		var start = next.idx + next.tag.length + 1
 		var before = input.substring(0, next.idx)
 		if (before) {result.push(before)}
-		var remaining = input.substring(next.idx + next.tag.length + 1)
+		var skipped = input.substring(next.idx, start)
+		var remaining = input.substring(start)
 		var body = tagBody(remaining)
 		if (body) {
-			var payload = body.arg ? processString(pkg, body.arg, tags) : body.arg;
-			var transformed = transform(pkg, node, next.tag, payload)
+			var payload = body.arg ? processString(root, parents, body.arg, tags) : body.arg;
+			var transformed = transform(root, parents, node, next.tag, payload)
 			var isStr = typeof transformed == 'string'
 			if (!isStr) {complex = true}
-			if (!isStr || transformed !== node) {transformed = processTags(pkg, transformed, tags)}
+			if (!isStr || transformed !== node) {transformed = processTags(root, parents, transformed, tags)}
 			result.push(transformed)
 			input = remaining.substring(body.end + 1)
 		}
 		else { // invalid, return original text
-			result.push('{' + next.tag + remaining)
+			result.push(skipped + remaining)
 		}
 	}
 	if (input) {result.push(input)}
 	return complex ? (result.length === 1 ? result[0] : result) : result.join('')
 }
 
-function nextTag(pkg, tokenstream, tags) {
-	var NOTFOUND = 999999999
-	var next = {tag:null, idx:NOTFOUND}
+function nextTag(tokenstream, tags) {
+	var next = {tag:null, idx:-1}
 	for (var i=0,tag; tag=tags[i]; i++) {
-		var exp = new RegExp('{' + tag + '[\\s\\.\\}\\[\\{\\(]')
+		var exp = new RegExp(escape(tag) + '\\{.*\\}') // new RegExp(tag.replace('.', '\\.') + '{.*}')
 		var idx = tokenstream.search(exp)
-		if ((idx !== -1) && (idx < next.idx) && (tokenstream[idx+tag.length+1])) {
+		if ((idx !== -1) && ((next.idx === -1) || (idx < next.idx)) && (tokenstream[idx+tag.length+1])) {
 			next.idx = idx
 			next.tag = tag
 		}
@@ -132,16 +139,16 @@ function addTags(tags, add) {
 	}
 }
 
-function loadTag(pkg, tag) {
-	var name = (pkg.pkgcfg && pkg.pkgcfg.tags && pkg.pkgcfg.tags[tag]) || (rootCfg && rootCfg.pkgcfg && rootCfg.pkgcfg.tags && rootCfg.pkgcfg.tags[tag]) || ('pkg' + tag)
+function loadTag(root, tag) {
+	var name = (root.pkgcfg && root.pkgcfg.tags && root.pkgcfg.tags[tag]) || (rootCfg && rootCfg.pkgcfg && rootCfg.pkgcfg.tags && rootCfg.pkgcfg.tags[tag]) || ('pkg' + tag)
 	try {
 		require(name)
 		if (! registeredTransforms[tag]) {
-			throw new Error('Succesfully loaded package ' + name + ', but it did not register a tag function for tag `{' + tag + '}`.')
+			throw new Error('Succesfully loaded package ' + name + ', but it did not register a tag function for tag `' + tag + '{}`.')
 		}
 	}
 	catch(e){
-		throw new Error('Unable to load pkgcfg tag function for tag `{' + tag + '}`: ' + e.message + '\nTry: npm install ' + name)
+		throw new Error('Unable to load pkgcfg tag function for tag `' + tag + '{}`: ' + e.message + '\nTry: npm install --save ' + name)
 	}
 }
 
@@ -190,10 +197,10 @@ function tagBody(tokenstream) {
 	return null
 }
 
-function transform(pkg, node, tag, arg) {
+function transform(root, parents, node, tag, arg) {
 	try {
-		var args = [pkg, node]
-		if (! registeredTransforms[tag]) {loadTag(pkg, tag)}
+		var args = [root, parents, node]
+		if (! registeredTransforms[tag]) {loadTag(root, tag)}
 		if (arg !== null) {
 			if (typeof arg == 'string') {
 				var a = arg.trim()
@@ -216,14 +223,14 @@ function transform(pkg, node, tag, arg) {
 			}
 		}
 		var result = registeredTransforms[tag].apply(root, args)
-		log.log('tag: %s(%s) => ', tag, args, result)
+		log.debug('tag: %s{%s} => ', tag, args, result)
 		return result
 	}
 	catch(error) {
 		var err = error instanceof pkgcfg.QuietError 
-			? log.log
+			? log.debug
 			: log.error
-		err('Error applying tag {%s (%s)}: ', tag, args, error)
+		err('Error applying tag %s{%s}: ', tag, args, error)
 		return node
 	}
 }
@@ -296,6 +303,10 @@ function convertQuotes(payload) {
 	if (esc) {
 		result += '"'
 	}
-	log.log('convertQuotes(' + payload + ') ==> ', result)
+	log.debug('convertQuotes(' + payload + ') ==> ', result)
 	return result
+}
+
+function escape(regex) {
+	return regex.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
 }
